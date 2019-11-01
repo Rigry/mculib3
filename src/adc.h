@@ -138,7 +138,8 @@ ADC_average& ADC_average::make (size_t conversion_qty)
            .size_memory (mcu::DMA_stream::DataSize::word16)
            .size_periph (mcu::DMA_stream::DataSize::word16)
            .inc_memory()
-           .enable_transfer_complete_interrupt();
+           .enable_transfer_complete_interrupt()
+           .circular_mode();
 #if defined (STM32F4)
     res.dma.circular_mode();
     res.dma.set_channel(DMA_stream::select_channel<ADC>());

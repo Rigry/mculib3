@@ -116,5 +116,11 @@ public:
       return tmp ^ v;
    }
 
+   bool operator= (bool v) 
+   {
+      v ? tim.compare_enable(channel) : tim.compare_disable(channel);
+      return tim.is_compare(channel);
+   }
+
    operator bool() { return tim.is_compare(channel); }
 };

@@ -116,7 +116,7 @@ endfunction(test)
 # test (STM32F4 test_flash_f4)
 # test (STM32F7 test_flash_f7)
 
-# test (STM32F0 test_adc_f0)
+test (STM32F0 test_adc_f0)
 
 # test (STM32F1 test_uart_f1)
 
@@ -124,7 +124,7 @@ endfunction(test)
 # test (STM32F1 test_modbus_master) # FIX
 # test (STM32F1 test_button_old)
 # test (STM32F4 test_pwm) # FIX
-test (STM32F1 test_hd44780) # FIX
+# test (STM32F1 test_hd44780) # FIX
 # test (STM32F0 test_encoder)
 
 # test (STM32F1 test_timers)
@@ -134,7 +134,7 @@ test (STM32F1 test_hd44780) # FIX
 
 # test (NULL test_reflect)
 # test (NULL test_table_crc)
-test (NULL test_string_buffer)
+# test (NULL test_string_buffer)
 # test (NULL test_net_buffer)
 # test (NULL test_vector)
 # test (NULL test_list)

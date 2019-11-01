@@ -145,29 +145,28 @@ public:
         }
         void interrupt()
         {
-            return
-                &parent == &DMA_stream::make<mcu::Periph::DMA1_stream1>() ? DMA1_Channel1_IRQHandler() :
-                &parent == &DMA_stream::make<mcu::Periph::DMA1_stream2>() ? null_function() :
-                &parent == &DMA_stream::make<mcu::Periph::DMA1_stream3>() ? null_function() :
-                &parent == &DMA_stream::make<mcu::Periph::DMA1_stream4>() ? null_function() :
-                &parent == &DMA_stream::make<mcu::Periph::DMA1_stream5>() ? null_function() :
-            #if defined(STM32F1) or defined(STM32F4) or defined(STM32F7)
-                &parent == &DMA_stream::make<mcu::Periph::DMA1_stream5>() ? null_function() :
-                &parent == &DMA_stream::make<mcu::Periph::DMA1_stream5>() ? null_function() :
-            #endif
-            #if defined(STM32F4) or defined(STM32F7)
-                &parent == &DMA_stream::make<mcu::Periph::DMA1_stream0>() ? null_function() :
-                &parent == &DMA_stream::make<mcu::Periph::DMA2_stream0>() ? null_function() :
-                &parent == &DMA_stream::make<mcu::Periph::DMA2_stream1>() ? null_function() :
-                &parent == &DMA_stream::make<mcu::Periph::DMA2_stream2>() ? null_function() :
-                &parent == &DMA_stream::make<mcu::Periph::DMA2_stream3>() ? null_function() :
-                &parent == &DMA_stream::make<mcu::Periph::DMA2_stream4>() ? null_function() :
-                &parent == &DMA_stream::make<mcu::Periph::DMA2_stream5>() ? null_function() :
-                &parent == &DMA_stream::make<mcu::Periph::DMA2_stream6>() ? null_function() :
-                &parent == &DMA_stream::make<mcu::Periph::DMA2_stream7>() ? null_function() :
-            #endif
-            null_function();
-
+            return DMA1_Channel1_IRQHandler(); // надо все переписывать
+            //     &parent == &DMA_stream::make<mcu::Periph::DMA1_stream1>() ? DMA1_Channel1_IRQHandler() :
+            //     &parent == &DMA_stream::make<mcu::Periph::DMA1_stream2>() ? null_function() :
+            //     &parent == &DMA_stream::make<mcu::Periph::DMA1_stream3>() ? null_function() :
+            //     &parent == &DMA_stream::make<mcu::Periph::DMA1_stream4>() ? null_function() :
+            //     &parent == &DMA_stream::make<mcu::Periph::DMA1_stream5>() ? null_function() :
+            // #if defined(STM32F1) or defined(STM32F4) or defined(STM32F7)
+            //     &parent == &DMA_stream::make<mcu::Periph::DMA1_stream5>() ? null_function() :
+            //     &parent == &DMA_stream::make<mcu::Periph::DMA1_stream5>() ? null_function() :
+            // #endif
+            // #if defined(STM32F4) or defined(STM32F7)
+            //     &parent == &DMA_stream::make<mcu::Periph::DMA1_stream0>() ? null_function() :
+            //     &parent == &DMA_stream::make<mcu::Periph::DMA2_stream0>() ? null_function() :
+            //     &parent == &DMA_stream::make<mcu::Periph::DMA2_stream1>() ? null_function() :
+            //     &parent == &DMA_stream::make<mcu::Periph::DMA2_stream2>() ? null_function() :
+            //     &parent == &DMA_stream::make<mcu::Periph::DMA2_stream3>() ? null_function() :
+            //     &parent == &DMA_stream::make<mcu::Periph::DMA2_stream4>() ? null_function() :
+            //     &parent == &DMA_stream::make<mcu::Periph::DMA2_stream5>() ? null_function() :
+            //     &parent == &DMA_stream::make<mcu::Periph::DMA2_stream6>() ? null_function() :
+            //     &parent == &DMA_stream::make<mcu::Periph::DMA2_stream7>() ? null_function() :
+            // #endif
+            // null_function();
         }
         
         template<class ... T>
