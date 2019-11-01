@@ -8,6 +8,7 @@
 #include "timers.h"
 #include "button_old.h"
 #include "modbus_master.h"
+#include "adc.h"
 // #include "example/example_adc.h"
 // #include "example/example_modbus_master.h"
 // #include "example_flash.h"
@@ -36,6 +37,15 @@ using RTS = mcu::PA1;
 
 int main()
 {
+    
+    constexpr auto conversion_on_channel {16};
+    struct ADC_{
+       ADC_average& control     = ADC_average::make<mcu::Periph::ADC1>(conversion_on_channel);
+       ADC_channel& uv_level    = control.add_channel<mcu::PA0>();
+       ADC_channel& temperature = control.add_channel<mcu::PA1>();
+    }adc{};
+
+    adc.control.start();
     // mcu::example::safe_flash();
     // mcu::example::flash();
 
@@ -54,29 +64,29 @@ int main()
     // Timer timer{100};
     // Timer timer_1{500};
 
-    constexpr bool parity_enable {true};
-    constexpr int  timeout       {100_ms};
-    constexpr UART::Settings set {
-          not parity_enable
-        , UART::Parity::even
-        , UART::DataBits::_8
-        , UART::StopBits::_1
-        , UART::Baudrate::BR9600
-    };
+    // constexpr bool parity_enable {true};
+    // constexpr int  timeout       {100_ms};
+    // constexpr UART::Settings set {
+    //       not parity_enable
+    //     , UART::Parity::even
+    //     , UART::DataBits::_8
+    //     , UART::StopBits::_1
+    //     , UART::Baudrate::BR9600
+    // };
 
     // constexpr auto uov_address {1};
 
-    struct Modbus {
-        Register<1, Modbus_function::read_03, 7>  uv_level;
-    } modbus;
+    // struct Modbus {
+    //     Register<1, Modbus_function::read_03, 7>  uv_level;
+    // } modbus;
 
-    decltype(auto) modbus_master =
-        make_modbus_master <mcu::Periph::USART1, TX, RX, RTS> (
-            timeout, set, modbus
-    );
+    // decltype(auto) modbus_master =
+    //     make_modbus_master <mcu::Periph::USART1, TX, RX, RTS> (
+    //         timeout, set, modbus
+    // );
 
     while(1){
-        modbus_master();
+        // modbus_master();
         // led ^= in;
         // led2 ^= in2;
         // count = counter;
