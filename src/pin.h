@@ -18,13 +18,13 @@ class Pin
 public:
    Pin(GPIO &port, int n) : port{port}, n{n} {}
 
-   template <class Pin_, mcu::PinMode mode = mcu::PinMode::Input>
+   template <class Pin_, mcu::PinMode mode = mcu::PinMode::Input, mcu::PushPull push_pull = mcu::PushPull::No>
    static auto &make()
    {
       static Pin pin{mcu::make_reference<Pin_::periph>(), Pin_::n};
       mcu::make_reference<mcu::Periph::RCC>()
           .template clock_enable<Pin_::periph>();
-      pin.port.template init<Pin_, mode>();
+      pin.port.template init<Pin_, mode, push_pull>();
       return pin;
    }
 
