@@ -76,6 +76,8 @@ public:
 		else if constexpr (p == Periph::DMA1_stream5) AHBENR.DMAEN = true;
 
 		else if constexpr (p == Periph::ADC1)   APB2ENR.ADC1EN = true;
+
+		else if constexpr (p == Periph::SYSCFG) APB2ENR.SYSCFGEN = true;
 		
         else static_assert ( always_false_v<decltype(p)>, "допиши clock_enable");
 	}
