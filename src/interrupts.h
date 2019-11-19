@@ -4,9 +4,7 @@
 #include "periph_dma.h"
 #include "periph_spi.h"
 #include "periph_tim.h"
-#if defined(STM32F1)
 #include "periph_exti.h"
-#endif
 
 
 #if defined (STM32F0)
@@ -24,10 +22,36 @@
     extern "C" void TIM16_IRQHandler              () { while(1) {} }
     extern "C" void TIM17_IRQHandler              () { while(1) {} }
 
-    extern "C" void USART1_IRQHandler() { 
-        interrupt_usart1.interrupt(); 
-        mcu::make_reference<mcu::Periph::USART1>().clear_interrupt_flags();} 
+    extern "C" void USART1_IRQHandler() { interrupt_usart1.interrupt(); mcu::make_reference<mcu::Periph::USART1>().clear_interrupt_flags();} 
 
+    extern "C" void EXTI0_1_IRQHandler() 
+    {
+        if (REF(EXTI).is_interrupt(0)) interrupt_EXTI0.interrupt();
+        if (REF(EXTI).is_interrupt(1)) interrupt_EXTI1.interrupt(); 
+        REF(EXTI).clear_interrupt_flags<0,1>();
+    }
+    extern "C" void EXTI2_3_IRQHandler() 
+    {
+        if (REF(EXTI).is_interrupt(2)) interrupt_EXTI2.interrupt();
+        if (REF(EXTI).is_interrupt(3)) interrupt_EXTI3.interrupt(); 
+        REF(EXTI).clear_interrupt_flags<2,3>();
+    }
+    extern "C" void EXTI4_15_IRQHandler() 
+    {
+        if (REF(EXTI).is_interrupt(4))  interrupt_EXTI4.interrupt();
+        if (REF(EXTI).is_interrupt(5))  interrupt_EXTI5.interrupt();
+        if (REF(EXTI).is_interrupt(6))  interrupt_EXTI6.interrupt();
+        if (REF(EXTI).is_interrupt(7))  interrupt_EXTI7.interrupt();
+        if (REF(EXTI).is_interrupt(8))  interrupt_EXTI8.interrupt();
+        if (REF(EXTI).is_interrupt(9))  interrupt_EXTI9.interrupt();
+        if (REF(EXTI).is_interrupt(10)) interrupt_EXTI10.interrupt();
+        if (REF(EXTI).is_interrupt(11)) interrupt_EXTI11.interrupt();
+        if (REF(EXTI).is_interrupt(12)) interrupt_EXTI12.interrupt();
+        if (REF(EXTI).is_interrupt(13)) interrupt_EXTI13.interrupt();
+        if (REF(EXTI).is_interrupt(14)) interrupt_EXTI14.interrupt();
+        if (REF(EXTI).is_interrupt(15)) interrupt_EXTI15.interrupt(); 
+        REF(EXTI).clear_interrupt_flags<4,15>();
+    }
 
 #elif defined (STM32F1)
     // список прерываний, которые не описаны

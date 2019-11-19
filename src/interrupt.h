@@ -105,7 +105,24 @@ Interrupt interrupt_DMA2_channel6 {DMA2_Stream6_IRQn};
 Interrupt interrupt_DMA2_channel7 {DMA2_Stream7_IRQn};
 #endif
 
-#if defined(STM32F1)
+#if defined(STM32F0)
+Interrupt interrupt_EXTI0     {EXTI0_1_IRQn};
+Interrupt interrupt_EXTI1     {EXTI0_1_IRQn};
+Interrupt interrupt_EXTI2     {EXTI2_3_IRQn};
+Interrupt interrupt_EXTI3     {EXTI2_3_IRQn};
+Interrupt interrupt_EXTI4     {EXTI4_15_IRQn};
+Interrupt interrupt_EXTI5     {EXTI4_15_IRQn};
+Interrupt interrupt_EXTI6     {EXTI4_15_IRQn};
+Interrupt interrupt_EXTI7     {EXTI4_15_IRQn};
+Interrupt interrupt_EXTI8     {EXTI4_15_IRQn};
+Interrupt interrupt_EXTI9     {EXTI4_15_IRQn};
+Interrupt interrupt_EXTI10    {EXTI4_15_IRQn};
+Interrupt interrupt_EXTI11    {EXTI4_15_IRQn};
+Interrupt interrupt_EXTI12    {EXTI4_15_IRQn};
+Interrupt interrupt_EXTI13    {EXTI4_15_IRQn};
+Interrupt interrupt_EXTI14    {EXTI4_15_IRQn};
+Interrupt interrupt_EXTI15    {EXTI4_15_IRQn};
+#elif defined(STM32F1)
 Interrupt interrupt_EXTI0     {EXTI0_IRQn};
 Interrupt interrupt_EXTI1     {EXTI1_IRQn};
 Interrupt interrupt_EXTI2     {EXTI2_IRQn};
@@ -181,7 +198,7 @@ auto& get_interrupt()
 }
 
 
-#if defined(STM32F1)
+#if defined(STM32F1) or defined(STM32F0)
 constexpr auto& get_external_interrupt (int n)
 {
     if (n == 0)  return interrupt_EXTI0;
