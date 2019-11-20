@@ -73,16 +73,18 @@ public:
 
    void notify() override {
       
-      if (value < qty_click() and not plus_executed) {
+      if (qty_click() == 1 and not plus_executed) {
          plus_executed = true;
-         value = qty_click();
+         // value = qty_click();
+         tim.clear_counter();
          plus_callback();
          return;
       }
 
-      if (value > qty_click() and not minus_executed) {
+      if (qty_click() == 32767 and not minus_executed) { // 32767 = -1
          minus_executed = true;
-         value = qty_click();
+         // value = qty_click();
+         tim.clear_counter();
          minus_callback();
          return;
       }
