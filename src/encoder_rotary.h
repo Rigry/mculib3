@@ -15,7 +15,6 @@ using TIM = mcu::TIM;
 
 class Encoder : private TickSubscriber 
 {
-   int value{0};
    Callback<>    minus_callback;
    Callback<>    plus_callback;
    bool plus_executed {false};
@@ -53,7 +52,7 @@ public:
       encoder.tim.set(TIM::SlaveMode::Encoder3)
                  .template set<channel_a>(TIM::SelectionCompareMode::Input)
                  .template set<channel_b>(TIM::SelectionCompareMode::Input);
-               //   .set_auto_reload(1);
+               //   .set_auto_reload(2);
       if (inverted)
          encoder.tim.template set<channel_a>(TIM::Polarity::falling);
       encoder.tim.clear_counter()
@@ -75,7 +74,6 @@ public:
       
       if (qty_click() == 1 and not plus_executed) {
          plus_executed = true;
-         // value = qty_click();
          tim.clear_counter();
          plus_callback();
          return;
@@ -83,13 +81,12 @@ public:
 
       if (qty_click() == 32767 and not minus_executed) { // 32767 = -1
          minus_executed = true;
-         // value = qty_click();
          tim.clear_counter();
          minus_callback();
          return;
       }
 
-      if (value == qty_click()){
+      if (qty_click() == 0){
          plus_executed = false;
          minus_executed = false;
          return;

@@ -9,6 +9,9 @@
 #include "button_old.h"
 #include "modbus_master.h"
 #include "adc.h"
+#include "syscfg_f0.h"
+#include "exti_f0.h"
+#include "wiegan.h"
 // #include "example/example_adc.h"
 // #include "example/example_modbus_master.h"
 // #include "example_flash.h"
@@ -38,14 +41,14 @@ using RTS = mcu::PA1;
 int main()
 {
     
-    constexpr auto conversion_on_channel {16};
-    struct ADC_{
-       ADC_average& control     = ADC_average::make<mcu::Periph::ADC1>(conversion_on_channel);
-       ADC_channel& uv_level    = control.add_channel<mcu::PA0>();
-       ADC_channel& temperature = control.add_channel<mcu::PA1>();
-    }adc{};
+    // constexpr auto conversion_on_channel {16};
+    // struct ADC_{
+    //    ADC_average& control     = ADC_average::make<mcu::Periph::ADC1>(conversion_on_channel);
+    //    ADC_channel& uv_level    = control.add_channel<mcu::PA0>();
+    //    ADC_channel& temperature = control.add_channel<mcu::PA1>();
+    // }adc{};
 
-    adc.control.start();
+    // adc.control.start();
     // mcu::example::safe_flash();
     // mcu::example::flash();
 
@@ -84,8 +87,44 @@ int main()
     //     make_modbus_master <mcu::Periph::USART1, TX, RX, RTS> (
     //         timeout, set, modbus
     // );
-
+    // auto &rcc = REF(RCC);
+    // rcc.clock_enable<mcu::PA6::periph>();
+    // rcc.clock_enable<mcu::Periph::SYSCFG>();
+    // decltype(auto) inter = Pin::make<mcu::PA6, mcu::PinMode::Input, mcu::PushPull::No>();
+    // decltype(auto) inter1 = Pin::make<mcu::PA7, mcu::PinMode::Input, mcu::PushPull::Down>();
+    // auto &syscfg = REF(SYSCFG);
+    // syscfg.set_line_interrupt<mcu::PA6>();
+    // syscfg.set_line_interrupt<mcu::PA7>();
+    // auto &exti = REF(EXTI);
+    // exti.enable_interrupt(6);
+    // exti.set_trigger(exti.falling, 6);
+    // exti.enable_interrupt(7);
+    // exti.set_trigger(exti.falling, 7);
+    // auto i{0};
+    // auto j{0};
+    decltype(auto) wiegan = Wiegan::make<mcu::PA6, mcu::PA7>();
+    decltype(auto) led = Pin::make<mcu::PC8, mcu::PinMode::Output>();
+    decltype(auto) led1 = Pin::make<mcu::PC9, mcu::PinMode::Output>();
+    uint32_t card{0};
     while(1){
+        // if ( exti.is_interrupt(7)) {
+        //     j++;
+        //     led ^= 1; 
+        //     exti.clear_interrupt_flags<7>();  
+        //     }
+       card = wiegan.get_number();
+        // if (exti.is_interrupt(6)) {
+        //     led1 ^= 1; 
+        //     i++; 
+        //     exti.clear_interrupt_flags(6);
+        // }
+        // if (not exti.is_interrupt(6)) {
+        //     led = true; 
+
+        // }
+        
+        
+
         // modbus_master();
         // led ^= in;
         // led2 ^= in2;
