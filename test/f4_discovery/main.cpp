@@ -1,140 +1,144 @@
 #define STM32F405xx
 #define F_OSC   8000000UL
-#define F_CPU   168000000UL
+#define F_CPU   48000000UL
 
+#include "init_clock.h"
 #include "periph_rcc.h"
 #include "periph_flash.h"
 #include "pin.h"
 #include "timers.h"
-#include "literals.h"
-#include "adc.h"
-#include "NTC_table.h"
-#include "delay.h"
-// #include "pwm_.h"
+// #include "literals.h"
+// #include "adc.h"
+// #include "NTC_table.h"
+// #include "delay.h"
+#include "pwm_.h"
 // #include "button_old.h"
 // #include "encoder.h"
 // #include "buttons.h"
 // #include "spi.h"
-#include "hd44780.h"
-#include "string_buffer.h"
+// #include "hd44780.h"
+// #include "string_buffer.h"
 
-using E   = mcu::PC14;       
-using RW  = mcu::PC15;       
-using RS  = mcu::PC13;      
-using DB4 = mcu::PC2;       
-using DB5 = mcu::PC3;
-using DB6 = mcu::PC0;    
-using DB7 = mcu::PC1;
+// using E   = mcu::PC14;       
+// using RW  = mcu::PC15;       
+// using RS  = mcu::PC13;      
+// using DB4 = mcu::PC2;       
+// using DB5 = mcu::PC3;
+// using DB6 = mcu::PC0;    
+// using DB7 = mcu::PC1;
 
 
 /// эта функция вызываеться первой в startup файле
-extern "C" void init_clock ()
-{
-   mcu::make_reference<mcu::Periph::FLASH>()
-      .set (mcu::FLASH::Latency::_5);
+extern "C" void init_clock () { init_clock<F_OSC, F_CPU>(); }
+// extern "C" void init_clock ()
+// {
+//    mcu::make_reference<mcu::Periph::FLASH>()
+//       .set (mcu::FLASH::Latency::_5);
 
-   mcu::make_reference<mcu::Periph::RCC>()
-      .on_HSE()
-      .wait_HSE_ready()
-      .set      (mcu::RCC::AHBprescaler::AHBnotdiv)
-      .set_APB1 (mcu::RCC::APBprescaler::APBdiv4)
-      .set_APB2 (mcu::RCC::APBprescaler::APBdiv2)
-      .set      (mcu::RCC:: SystemClock::CS_PLL)
-      .set_PLLM<4>()
-      .set_PLLN<168>()
-      .set      (mcu::RCC::     PLLPdiv::_2)
-      // .set_PLLQ<7>()
-      .set      (mcu::RCC::   PLLsource::HSE)
-      .on_PLL()
-      .wait_PLL_ready();
-}
+//    mcu::make_reference<mcu::Periph::RCC>()
+//       .on_HSE()
+//       .wait_HSE_ready()
+//       .set      (mcu::RCC::AHBprescaler::AHBnotdiv)
+//       .set_APB1 (mcu::RCC::APBprescaler::APBdiv4)
+//       .set_APB2 (mcu::RCC::APBprescaler::APBdiv2)
+//       .set      (mcu::RCC:: SystemClock::CS_PLL)
+//       .set_PLLM<4>()
+//       .set_PLLN<168>()
+//       .set      (mcu::RCC::     PLLPdiv::_2)
+//       // .set_PLLQ<7>()
+//       .set      (mcu::RCC::   PLLsource::HSE)
+//       .on_PLL()
+//       .wait_PLL_ready();
+// }
 
 int main()
 {
-   constexpr auto conversion_on_channel {16};
-   struct {
-      ADC_average& control       = ADC_average::make<mcu::Periph::ADC1>(conversion_on_channel);
-      ADC_channel& temperature   = control.add_channel<mcu::PA2>();
-   } adc{};
+   // constexpr auto conversion_on_channel {16};
+   // struct {
+   //    ADC_average& control       = ADC_average::make<mcu::Periph::ADC1>(conversion_on_channel);
+   //    ADC_channel& temperature   = control.add_channel<mcu::PA2>();
+   // } adc{};
    
 
-   struct {
-      ADC_average& control       = ADC_average::make<mcu::Periph::ADC2>(conversion_on_channel);
-      ADC_channel& temperature_2 = control.add_channel<mcu::PA1>();
-   } adc2{};
+   // struct {
+   //    ADC_average& control       = ADC_average::make<mcu::Periph::ADC2>(conversion_on_channel);
+   //    ADC_channel& temperature_2 = control.add_channel<mcu::PA1>();
+   // } adc2{};
    // decltype(auto) encoder = Encoder::make<mcu::Periph::TIM8, mcu::PC6, mcu::PC7, true>();
-   // decltype(auto) pwm = PWM::make<mcu::Periph::TIM3, mcu::PC9>(490);
-   // pwm.out_enable(); 
-   // pwm.duty_cycle = 400;
+   decltype(auto) pwm = PWM::make<mcu::Periph::TIM4, mcu::PD14>(490);
+   pwm.out_enable(); 
+   pwm.duty_cycle = 50;
+   pwm.frequency = 20000;
    // volatile decltype (auto) led_blue   = Pin::make<mcu::PD15, mcu::PinMode::Output>();
    // volatile decltype (auto) led_orange = Pin::make<mcu::PD13, mcu::PinMode::Output>();
    // volatile decltype (auto) enter      = mcu::Button::make<mcu::PA8>(); 
-   volatile decltype (auto) led_red    = Pin::make<mcu::PA15, mcu::PinMode::Output>();
-   // volatile decltype (auto) led_green  = Pin::make<mcu::PC10, mcu::PinMode::Output>();
+   volatile decltype (auto) led_red    = Pin::make<mcu::PD13, mcu::PinMode::Output>();
+   volatile decltype (auto) led_green  = Pin::make<mcu::PD12, mcu::PinMode::Output>();
 
-   // Timer timer{100};
+   Timer timer{500};
    // int16_t value;
    
    
    // constexpr auto _2V {2 * 16 * 4095/3.3}; 
    // auto step_pwm {10};
 
-   constexpr size_t U = 33;
-   constexpr size_t R = 5100;
-   volatile auto t  = NTC::u2904<U,R>[30];
+   // constexpr size_t U = 33;
+   // constexpr size_t R = 5100;
+   // volatile auto t  = NTC::u2904<U,R>[30];
    // volatile auto t2 = NTC::u2904<U,R>[26];
 
    
 
-   int temp{0};
-   int temp_2{0};
+   // int temp{0};
+   // int temp_2{0};
    
 
    
 
-   adc.control.set_callback ([&]{
-      adc.temperature = adc.temperature / 16;
-      adc2.temperature_2 = adc2.temperature_2 / 16;
-      for (size_t i = 0; i <= std::size(NTC::u2904<U,R>) - 2; i++) {
-         if (adc.temperature < NTC::u2904<U,R>[i] and adc.temperature > NTC::u2904<U,R>[i + 1])
-            temp = i;
-      }
+   // adc.control.set_callback ([&]{
+   //    adc.temperature = adc.temperature / 16;
+   //    adc2.temperature_2 = adc2.temperature_2 / 16;
+   //    for (size_t i = 0; i <= std::size(NTC::u2904<U,R>) - 2; i++) {
+   //       if (adc.temperature < NTC::u2904<U,R>[i] and adc.temperature > NTC::u2904<U,R>[i + 1])
+   //          temp = i;
+   //    }
 
-      for (size_t i = 0; i <= std::size(NTC::u2904<U,R>) - 2; i++) {
-         if (adc2.temperature_2 < NTC::u2904<U,R>[i] and adc2.temperature_2 > NTC::u2904<U,R>[i + 1])
-            temp_2 = i;
-      }
+   //    for (size_t i = 0; i <= std::size(NTC::u2904<U,R>) - 2; i++) {
+   //       if (adc2.temperature_2 < NTC::u2904<U,R>[i] and adc2.temperature_2 > NTC::u2904<U,R>[i + 1])
+   //          temp_2 = i;
+   //    }
       
-      // led_red = adc.temperature < t;
-   });
-    adc.control.start();
-    adc2.control.start();
+   //    // led_red = adc.temperature < t;
+   // });
+   //  adc.control.start();
+   //  adc2.control.start();
 
    
 
    // uint16_t frequency = 22000;
    // uint16_t current = 0.5;
-   constexpr auto hd44780_pins = HD44780_pins<RS, RW, E, DB4, DB5, DB6, DB7>{};
-   String_buffer lcd;
-   HD44780 hd44780 { HD44780::make(hd44780_pins, lcd.get_buffer()) };
+   // constexpr auto hd44780_pins = HD44780_pins<RS, RW, E, DB4, DB5, DB6, DB7>{};
+   // String_buffer lcd;
+   // HD44780 hd44780 { HD44780::make(hd44780_pins, lcd.get_buffer()) };
    // lcd.line(0).cursor(2) << "Hi, I'm V17.";
    // lcd.line(1) << "You wanna work?";
 
-   lcd.line(0) << "t = " << temp;
+   // lcd.line(0) << "t = " << temp;
    // lcd.line(1) << cur;
    // lcd.line(1) << "I = " << current;
 
    
    while(1){
 
-      lcd.line(0) << "t = " << temp;
-      led_red = temp >= 30;
-      // cur = adc.current;
-      lcd.line(1) << temp_2;
+      // lcd.line(0) << "t = " << temp;
+      // led_red = temp >= 30;
+      // // cur = adc.current;
+      // lcd.line(1) << temp_2;
       // led_red = pwm ^= enter; 
       // pwm.frequency = encoder;
       // value = encoder;
-      // // led_green ^= timer.event();
+      led_red = true;
+      led_green ^= timer.event();
       // // led_red   ^= enter;
       // led_green = value > 200 ? true : false;
       // pwm.duty_cycle += timer.event() ? step_pwm : 0;

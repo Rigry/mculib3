@@ -5,6 +5,7 @@
 #include "external.h"
 #include "limited_int.h"
 #include <bitset>
+#include <ios>
 
 class Wiegan
 {
@@ -14,7 +15,10 @@ class Wiegan
    Interrupt& interrupt_D1;
 
    uint32_t card_number{0};
+   uint32_t card_temp_high{0};
+   uint32_t card_temp_low{0};
    uint8_t index{0};
+   bool get{false};
 
    using Parent = Wiegan;
 
@@ -22,7 +26,13 @@ class Wiegan
    {
       if (external_D0.is_event()) {
          index++;
-         card_number <<= 1;
+         if (index>31)		
+	      {
+		      card_temp_high |= ((0x80000000 & card_temp_low)>>31);	
+		      card_temp_high <<= 1;
+		      card_temp_low <<=1;
+	      } else
+            card_temp_low <<= 1;
       }
    }
 
@@ -30,8 +40,16 @@ class Wiegan
    {
       if (external_D1.is_event()) {
          index++;
-         card_number |= 1;
-         card_number <<= 1;
+         if (index>31)
+	      {
+		      card_temp_high |= ((0x80000000 & card_temp_low)>>31);	
+		      card_temp_high <<= 1;
+            card_temp_low |= 1;
+		      card_temp_low <<=1;
+	      } else {
+            card_temp_low |= 1;
+            card_temp_low <<= 1;
+         }
       }
    }
 
@@ -81,11 +99,42 @@ public:
 
    uint32_t get_number()
    {
-      return card_number;
+      if (not get) {
+         if (index == 26) {							// EM tag
+	         card_number = (card_temp_low & 0x1FFFFFE) >>1;
+         } else if (index == 34) {								// Mifare 
+	      	card_temp_high = card_temp_high & 0x03;	// only need the 2 LSB of the codehigh
+	      	card_temp_high <<= 30;							// shift 2 LSB to MSB		
+	      	card_temp_low >>=1;
+	      	card_number = (card_temp_high | card_temp_low);
+	      } else {
+            index = 0;
+            card_temp_high = 0;
+            card_temp_low = 0;
+            card_number = 0;
+         }
+         get = true;
+      }
+								
+      return card_number; // EM tag or Mifare without parity bits
+   }
+
+   uint32_t get_high_bits()
+   {
+      return card_number >> 16;
+   }
+
+   uint32_t get_low_bits()
+   {
+      return static_cast<uint16_t>(card_number);
    }
 
    void reset_number()
    {
-      
+      get = false;
+      index = 0;
+      card_temp_high = 0;
+      card_temp_low = 0;
+      card_number = 0;
    }
 };
