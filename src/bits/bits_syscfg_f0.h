@@ -4,38 +4,14 @@
 
 namespace mcu::SYSCFG_bits {
    
-   enum Port { PA = 0b0000, PB, PC, PD, PF = 0b0101 }; 
+   enum Port { PA = 0b0000, PB = 0b001, PC = 0b010, PD = 0b011, PF = 0b0101 }; 
 
-   struct SYSCFG_EXTICR1 {
-      Port EXTI0   :4;
-      Port EXTI1   :4;
-      Port EXTI2   :4;
-      Port EXTI3   :4;
-      uint32_t     :16;
-   }__attribute__((packed));
-
-   struct SYSCFG_EXTICR2 {
-      Port EXTI4   :4;
-      Port EXTI5   :4;
-      Port EXTI6   :4;
-      Port EXTI7   :4;
-      uint32_t     :16;
-   }__attribute__((packed));
-
-   struct SYSCFG_EXTICR3 {
-      Port EXTI8   :4;
-      Port EXTI9   :4;
-      Port EXTI10  :4;
-      Port EXTI11  :4;
-      uint32_t     :16;
-   }__attribute__((packed));
-
-   struct SYSCFG_EXTICR4 {
-      Port EXTI12  :4;
-      Port EXTI13  :4;
-      Port EXTI14  :4;
-      Port EXTI15  :4;
-      uint32_t     :16;
+   struct SYSCFG_EXTICR {
+      uint32_t EXTI0_4_8_12   :4;
+      uint32_t EXTI1_5_9_13   :4;
+      uint32_t EXTI2_6_10_14  :4;
+      uint32_t EXTI3_7_11_15  :4;
+      uint32_t                :16;
    }__attribute__((packed));
 
 } //namespace mcu::SYSCFG_bits

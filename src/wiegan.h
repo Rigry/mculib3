@@ -17,10 +17,7 @@ class Wiegan : TickSubscriber
    int time {0}; // выдержка времени для протокола
 
    uint32_t card_number{0};
-
    uint8_t index{0};
-   bool _26{false};
-   bool _34{false};
    std::array<uint16_t, 40> numder;
 
    using Parent = Wiegan;
