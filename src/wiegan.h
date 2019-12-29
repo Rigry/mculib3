@@ -3,53 +3,53 @@
 #include "timers.h"
 #include "interrupt.h"
 #include "external.h"
-#include "limited_int.h"
+#include "timers.h"
 #include <bitset>
-#include <ios>
+#include <array>
 
-class Wiegan
+class Wiegan : TickSubscriber
 {
    External& external_D0;
    External& external_D1;
    Interrupt& interrupt_D0;
    Interrupt& interrupt_D1;
 
+   int time {0}; // выдержка времени для протокола
+
    uint32_t card_number{0};
-   uint32_t card_temp_high{0};
-   uint32_t card_temp_low{0};
+
    uint8_t index{0};
-   bool get{false};
+   bool _26{false};
+   bool _34{false};
+   std::array<uint16_t, 40> numder;
 
    using Parent = Wiegan;
 
    void D0_Interrupt()
    {
       if (external_D0.is_event()) {
-         index++;
-         if (index>31)		
-	      {
-		      card_temp_high |= ((0x80000000 & card_temp_low)>>31);	
-		      card_temp_high <<= 1;
-		      card_temp_low <<=1;
-	      } else
-            card_temp_low <<= 1;
+         tick_subscribe();
+         numder[index++] = 0;
+         time = 0;
       }
    }
 
    void D1_Interrupt()
    {
       if (external_D1.is_event()) {
-         index++;
-         if (index>31)
-	      {
-		      card_temp_high |= ((0x80000000 & card_temp_low)>>31);	
-		      card_temp_high <<= 1;
-            card_temp_low |= 1;
-		      card_temp_low <<=1;
-	      } else {
-            card_temp_low |= 1;
-            card_temp_low <<= 1;
-         }
+         tick_subscribe();
+         numder[index++] = 1;
+         time = 0;
+      }
+   }
+
+   void notify() override 
+   {
+      time++;
+      if (time > 250) {
+         time = 0;
+         tick_unsubscribe();
+         get_number();
       }
    }
 
@@ -97,44 +97,30 @@ public:
       return wiegan;
    }
 
-   uint32_t get_number()
+   void get_number()
    {
-      if (not get) {
-         if (index == 26) {							// EM tag
-	         card_number = (card_temp_low & 0x1FFFFFE) >>1;
-         } else if (index == 34) {								// Mifare 
-	      	card_temp_high = card_temp_high & 0x03;	// only need the 2 LSB of the codehigh
-	      	card_temp_high <<= 30;							// shift 2 LSB to MSB		
-	      	card_temp_low >>=1;
-	      	card_number = (card_temp_high | card_temp_low);
-	      } else {
-            index = 0;
-            card_temp_high = 0;
-            card_temp_low = 0;
-            card_number = 0;
+      card_number = 0;
+      if (index == 26 or index == 34) {
+         for (auto i = 1; i < (index - 1); i++) {
+            card_number |= (numder[i] << ((index - 2) - i));
          }
-         get = true;
       }
-								
-      return card_number; // EM tag or Mifare without parity bits
+      index = 0;
    }
 
-   uint32_t get_high_bits()
+   uint16_t get_high_bits()
    {
       return card_number >> 16;
    }
 
-   uint32_t get_low_bits()
+   uint16_t get_low_bits()
    {
       return static_cast<uint16_t>(card_number);
    }
 
    void reset_number()
    {
-      get = false;
       index = 0;
-      card_temp_high = 0;
-      card_temp_low = 0;
       card_number = 0;
    }
 };
