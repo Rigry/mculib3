@@ -16,6 +16,8 @@ class Wiegan : TickSubscriber
 
    int time {0}; // выдержка времени для протокола
 
+   bool enable_{true};
+
    uint32_t card_number{0};
    uint8_t index{0};
    std::array<uint16_t, 40> numder;
@@ -24,7 +26,7 @@ class Wiegan : TickSubscriber
 
    void D0_Interrupt()
    {
-      if (external_D0.is_event()) {
+      if (external_D0.is_event() and enable_) {
          tick_subscribe();
          numder[index++] = 0;
          index %= 40;
@@ -34,7 +36,7 @@ class Wiegan : TickSubscriber
 
    void D1_Interrupt()
    {
-      if (external_D1.is_event()) {
+      if (external_D1.is_event() and enable_) {
          tick_subscribe();
          numder[index++] = 1;
          index %= 40;
@@ -121,5 +123,15 @@ public:
    {
       index = 0;
       card_number = 0;
+   }
+
+   bool new_card()
+   {
+      return (card_number > 0);
+   }
+
+   void enable(bool v = true)
+   {
+      enable_ = v;
    }
 };
