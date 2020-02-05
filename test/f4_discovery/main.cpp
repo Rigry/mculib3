@@ -65,15 +65,15 @@ int main()
    //    ADC_channel& temperature_2 = control.add_channel<mcu::PA1>();
    // } adc2{};
    // decltype(auto) encoder = Encoder::make<mcu::Periph::TIM8, mcu::PC6, mcu::PC7, true>();
-   decltype(auto) pwm = PWM::make<mcu::Periph::TIM4, mcu::PD14>(490);
-   pwm.out_enable(); 
-   pwm.duty_cycle = 50;
-   pwm.frequency = 20000;
+   // decltype(auto) pwm = PWM::make<mcu::Periph::TIM4, mcu::PD14>(490);
+   // pwm.out_enable(); 
+   // pwm.duty_cycle = 50;
+   // pwm.frequency = 20000;
    // volatile decltype (auto) led_blue   = Pin::make<mcu::PD15, mcu::PinMode::Output>();
    // volatile decltype (auto) led_orange = Pin::make<mcu::PD13, mcu::PinMode::Output>();
    // volatile decltype (auto) enter      = mcu::Button::make<mcu::PA8>(); 
-   volatile decltype (auto) led_red    = Pin::make<mcu::PD13, mcu::PinMode::Output>();
-   volatile decltype (auto) led_green  = Pin::make<mcu::PD12, mcu::PinMode::Output>();
+   volatile decltype (auto) led_red    = Pin::make<mcu::PC10, mcu::PinMode::Output>();
+   volatile decltype (auto) led_green  = Pin::make<mcu::PA15, mcu::PinMode::Output>();
 
    Timer timer{500};
    // int16_t value;

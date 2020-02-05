@@ -11,11 +11,10 @@
 
 using SYSCFG = mcu::SYSCFG;
 using EXTI   = mcu::EXTI;
-
+using Edge   = mcu::EXTI::Edge;
 
 class External
 {
-   using Edge = mcu::EXTI::Edge;
    using Periph = mcu::Periph;
 protected:
    Pin& external_pin;

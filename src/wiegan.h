@@ -27,6 +27,7 @@ class Wiegan : TickSubscriber
       if (external_D0.is_event()) {
          tick_subscribe();
          numder[index++] = 0;
+         index %= 40;
          time = 0;
       }
    }
@@ -36,6 +37,7 @@ class Wiegan : TickSubscriber
       if (external_D1.is_event()) {
          tick_subscribe();
          numder[index++] = 1;
+         index %= 40;
          time = 0;
       }
    }
