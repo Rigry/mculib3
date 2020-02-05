@@ -255,6 +255,8 @@ void Modbus_master<max_regs_qty>::operator() ()
                 if (reg->function == Modbus_function::read_03 or reg->function == Modbus_function::write_16) {
                     uart.buffer << byte(0);
                     uart.buffer << byte(1);
+                    if (reg->function == Modbus_function::write_16)
+                        uart.buffer << byte(2);
                 } else if (reg->function == Modbus_function::force_coil_05) {
                     uart.buffer << (bool(reg->data) ? byte(0xFF) : byte(0));
                     uart.buffer << byte(0);
