@@ -262,7 +262,7 @@ void Modbus_master<max_regs_qty>::operator() ()
                     uart.buffer << byte(0);
                 }
                 if (reg->function == Modbus_function::write_16) {
-                    uart.buffer << static_cast<byte>(reg->data << 8) << static_cast<byte>(reg->data);
+                    uart.buffer << static_cast<byte>(reg->data >> 8) << static_cast<byte>(reg->data);
                 }
                 if (reg->function == Modbus_function::read_03 or reg->function == Modbus_function::force_coil_05) {
                     auto [crc_lo, crc_hi] = reg->get_crc();
