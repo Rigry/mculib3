@@ -46,7 +46,7 @@ class Modbus_slave : TickSubscriber
     bool check_reg  (uint16_t qty_reg_device); // for 05
 
     void answer_error (Modbus_error_code);
-    void answer_03();
+    template <class fun> void answer_03 (fun request);
     template <class function> void answer_16 (function reaction);
     void answer_05();
 
@@ -149,8 +149,8 @@ public:
     }
 
 
-    template <class function>
-    void operator() (function reaction);
+    template <class function, class fun>
+    void operator() (function reaction, fun request = [](){});
     auto& buffer(){return uart.buffer;}
 
 };
@@ -194,8 +194,8 @@ public:
 
 
 template <class InRegs_t, class OutRegs_t, size_t coils_qty>
-template <class function>
-inline void Modbus_slave<InRegs_t, OutRegs_t, coils_qty>::operator() (function reaction)
+template <class function, class fun>
+inline void Modbus_slave<InRegs_t, OutRegs_t, coils_qty>::operator() (function reaction, fun request)
 {
     if (uart.is_receiving()) {
         time = 0;
@@ -225,7 +225,7 @@ inline void Modbus_slave<InRegs_t, OutRegs_t, coils_qty>::operator() (function r
     uart.buffer.pop_front(); // adr
     func = uart.buffer.pop_front();
     switch (Modbus_function(func)) {
-        case Modbus_function::read_03 : answer_03();         break;
+        case Modbus_function::read_03 : answer_03(request);         break;
         case Modbus_function::write_16: answer_16(reaction); break;
         case Modbus_function::force_coil_05: answer_05();    break;
         default: answer_error (Modbus_error_code::wrong_func);
@@ -285,7 +285,8 @@ void Modbus_slave<InReg, OutRegs_t, coils_qty>::answer_error(Modbus_error_code c
 }
 
 template <class InReg, class OutRegs_t, size_t coils_qty>
-void Modbus_slave<InReg, OutRegs_t, coils_qty>::answer_03()
+template <class fun>
+void Modbus_slave<InReg, OutRegs_t, coils_qty>::answer_03(fun request)
 {
     if (not check_regs(OutRegQty)) {
         answer_error(Modbus_error_code::wrong_reg);
@@ -294,8 +295,10 @@ void Modbus_slave<InReg, OutRegs_t, coils_qty>::answer_03()
     uart.buffer.clear();
     // TODO определить оператор вместо статик каста
     uart.buffer << address << static_cast<uint8_t>(Modbus_function::read_03) << qty_byte;
-    while(qty_reg--)
+    while(qty_reg--) {
+        request(first_reg);
         uart.buffer << arOutRegs[first_reg++];
+    }
     auto [low_, high_] = CRC16(uart.buffer.begin(), uart.buffer.end());
     uart.buffer << low_ << high_;
 
