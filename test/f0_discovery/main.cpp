@@ -12,6 +12,7 @@
 #include "syscfg_f0.h"
 #include "exti_f0.h"
 #include "wiegan.h"
+#include "button.h"
 // #include "example/example_adc.h"
 // #include "example/example_modbus_master.h"
 // #include "example_flash.h"
@@ -58,14 +59,10 @@ int main()
     // decltype(auto) led = Pin::make<mcu::PB0, mcu::PinMode::Output>();
     // decltype(auto) led2 = Pin::make<mcu::PB1, mcu::PinMode::Output>();
 
-    // decltype(auto) in = mcu::Button::make<mcu::PA9>();
+    // decltype(auto) in = mcu::Button::make<mcu::PA0>();
     // decltype(auto) in2 = mcu::Button::make<mcu::PA7>();
     
-    // decltype(auto) in = Pin::make<mcu::PA9, mcu::PinMode::Input>();
-    // decltype(auto) in1 = Pin::make<mcu::PA7, mcu::PinMode::Input>();
-
-    // Timer timer{100};
-    // Timer timer_1{500};
+    
 
     // constexpr bool parity_enable {true};
     // constexpr int  timeout       {100_ms};
@@ -102,17 +99,29 @@ int main()
     // exti.set_trigger(exti.falling, 7);
     // auto i{0};
     // auto j{0};
-    decltype(auto) wiegan = Wiegan::make<mcu::PA6, mcu::PA7>();
+
+    decltype(auto) dir = Pin::make<mcu::PA4, mcu::PinMode::Output>();
+    decltype(auto) step = Pin::make<mcu::PA5, mcu::PinMode::Output>();
+    decltype(auto) en = Pin::make<mcu::PA6, mcu::PinMode::Output>();
+    en = true;
+    int time = 1;
+    Timer timer{time};
+    // decltype(auto) wiegan = Wiegan::make<mcu::PA6, mcu::PA7>();
     decltype(auto) led = Pin::make<mcu::PC8, mcu::PinMode::Output>();
     decltype(auto) led1 = Pin::make<mcu::PC9, mcu::PinMode::Output>();
-    uint32_t card{0};
+    // uint32_t card{0};
+    using Enter = mcu::PA0;
+    auto enter = Button<Enter>();
+    enter.set_down_callback([&]{step ^= 1;});
+    enter.set_long_push_callback([&]{dir ^= 1;});
+    
     while(1){
         // if ( exti.is_interrupt(7)) {
         //     j++;
         //     led ^= 1; 
         //     exti.clear_interrupt_flags<7>();  
         //     }
-       card = wiegan.get_number();
+    //    card = wiegan.get_number();
         // if (exti.is_interrupt(6)) {
         //     led1 ^= 1; 
         //     i++; 
@@ -122,6 +131,9 @@ int main()
         //     led = true; 
 
         // }
+        step ^= timer.event();
+       
+        // clk = true;
         
         
 
