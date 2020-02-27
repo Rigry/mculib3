@@ -13,6 +13,8 @@
 #include "exti_f0.h"
 #include "wiegan.h"
 #include "button.h"
+#include "pwm_.h"
+#include "encoder.h"
 // #include "example/example_adc.h"
 // #include "example/example_modbus_master.h"
 // #include "example_flash.h"
@@ -100,47 +102,119 @@ int main()
     // auto i{0};
     // auto j{0};
 
+    // decltype(auto) pwm = PWM::make<mcu::Periph::TIM3, mcu::PC8>(990);
+    // pwm.out_enable(); 
+    // pwm.duty_cycle = 500;
+    // pwm.frequency = 3000;
+
+    volatile decltype(auto) encoder = Encoder::make<mcu::Periph::TIM3, mcu::PC6, mcu::PC7>();
+    uint16_t count{0};
+
     decltype(auto) dir = Pin::make<mcu::PA4, mcu::PinMode::Output>();
     decltype(auto) step = Pin::make<mcu::PA5, mcu::PinMode::Output>();
-    decltype(auto) en = Pin::make<mcu::PA6, mcu::PinMode::Output>();
-    en = true;
+    decltype(auto) en = Pin::make<mcu::PC5, mcu::PinMode::Output>();
+    // decltype(auto) ms1 = Pin::make<mcu::PC4, mcu::PinMode::Output>();
+    // decltype(auto) ms2 = Pin::make<mcu::PA7, mcu::PinMode::Output>();
+    // decltype(auto) ms3 = Pin::make<mcu::PA6, mcu::PinMode::Output>();
+    // ms1 = false;
+    // ms2 = false;
+    // ms3 = false;
+    // en = true;
     int time = 1;
     Timer timer{time};
     // decltype(auto) wiegan = Wiegan::make<mcu::PA6, mcu::PA7>();
-    decltype(auto) led = Pin::make<mcu::PC8, mcu::PinMode::Output>();
-    decltype(auto) led1 = Pin::make<mcu::PC9, mcu::PinMode::Output>();
+    // decltype(auto) led = Pin::make<mcu::PC8, mcu::PinMode::Output>();
+    // decltype(auto) led1 = Pin::make<mcu::PC9, mcu::PinMode::Output>();
     // uint32_t card{0};
     using Enter = mcu::PA0;
     auto enter = Button<Enter>();
-    enter.set_down_callback([&]{step ^= 1;});
-    enter.set_long_push_callback([&]{dir ^= 1;});
+    enter.set_down_callback([&]{dir ^= 1;});
+    // enter.set_long_push_callback([&]{dir ^= 1;});
+
+    enum Step_ {wait, _1, _2, _3, _4, pause} step_{Step_::_1};
+    Step_ next_step{Step_::_1};
+    uint16_t unit{200};
+    Timer pause_{};
     
     while(1){
-        // if ( exti.is_interrupt(7)) {
-        //     j++;
-        //     led ^= 1; 
-        //     exti.clear_interrupt_flags<7>();  
-        //     }
-    //    card = wiegan.get_number();
-        // if (exti.is_interrupt(6)) {
-        //     led1 ^= 1; 
-        //     i++; 
-        //     exti.clear_interrupt_flags(6);
-        // }
-        // if (not exti.is_interrupt(6)) {
-        //     led = true; 
+      
+        // dir ^= timer.event();
+        count = encoder;
+        // switch (step_)
+        // {
+        //     case wait:
 
+        //     break;
+        //     case _1:
+        //         if (timer.event()) {
+        //             step ^= 1;
+        //             unit--;
+        //         }
+        //         if (unit == 0) {
+        //             step_ = Step_::pause;
+        //             pause_.start(1000);
+        //             next_step = Step_::_2;
+        //             unit = 200;
+        //         }
+        //     break;
+
+        //     case _2:
+        //         if (timer.event()) {
+        //             step ^= 1;
+        //             unit--;
+        //         }
+        //         if (unit == 0) {
+        //             step_ = Step_::pause;
+        //             pause_.start(1500);
+        //             next_step = Step_::_3;
+        //             unit = 200;
+        //             dir = true;
+        //         }
+        //     break;
+
+        //     case _3:
+        //         if (timer.event()) {
+        //             step ^= 1;
+        //             unit--;
+        //         }
+        //         if (unit == 0) {
+        //             step_ = Step_::pause;
+        //             pause_.start(1000);
+        //             next_step = Step_::_4;
+        //             unit = 200;
+        //         }
+        //     break;
+
+        //     case _4:
+        //         if (timer.event()) {
+        //             step ^= 1;
+        //             unit--;
+        //         }
+        //         if (unit == 0) {
+        //             step_ = Step_::pause;
+        //             pause_.start(1000);
+        //             next_step = Step_::_1;
+        //             unit = 200;
+        //             dir = false;
+        //         }
+        //     break;
+
+        //     case pause:
+        //         en = true;
+        //         if (pause_.done()) {
+        //             pause_.stop();
+        //             step_ = next_step;
+        //             en = false;
+        //         }
+        //     break;
         // }
-        step ^= timer.event();
+        // step ^= timer.event();
+        // if (timer.event()) {
+        //             step ^= 1;
+        //             unit--;
+        //         }
        
-        // clk = true;
-        
-        
-
-        // modbus_master();
-        // led ^= in;
-        // led2 ^= in2;
-        // count = counter;
+      
     }
 
 }
