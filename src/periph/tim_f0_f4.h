@@ -68,14 +68,14 @@ public:
    TIM&     counter_enable()                { CR1.CEN = true;     return *this; }
    TIM&     counter_disable()               { CR1.CEN = false;    return *this; }
    TIM&     clear_counter()                 { CNT = 0;            return *this; }
-   TIM&     set_counter (uint16_t v)        { CNT = v;            return *this; }
+   TIM&     set_counter (uint32_t v)        { CNT = v;            return *this; }
    TIM&     ext_clock_enable()              { SMCR.ECE = true;    return *this; }
    TIM&     ext_clock_disable()             { SMCR.ECE = false;   return *this; }
    TIM&     set_prescaller (uint16_t v)     { PSC = v;            return *this; }
    TIM&     auto_reload_enable()            { CR1.ARPE = true;    return *this; }
    TIM&     set (SlaveMode v)               { SMCR.SMS = v;       return *this; }
    TIM&     set (Trigger v)                 { SMCR.TS  = v;       return *this; }
-   TIM&     set_auto_reload  (uint16_t v)   { ARR = v;            return *this; }
+   TIM&     set_auto_reload  (uint32_t v)   { ARR = v;            return *this; }
    TIM&     update_interrupt_enable()       { DIER.UIE = true;    return *this; }
    TIM&     compare_enable   (uint32_t v)   { registr(CCER) |=  v; return *this; } // TODO ??????? ???? ?? ????????
    TIM&     compare_disable  (uint32_t v)   { *reinterpret_cast<__IO uint32_t*>(&CCER) &= ~v; return *this; }
@@ -105,7 +105,7 @@ public:
    template<Channel> TIM& compareToggle  ();
    template<Channel> TIM& compare_enable ();
    template<Channel> TIM& compare_disable();
-   TIM& set_compare (Channel, uint16_t);
+   TIM& set_compare (Channel, uint32_t);
    template<Channel>  __IO uint32_t& get_compare_reference();
 
    template<Periph, class Pin_> static constexpr PinMode pin_mode();
@@ -146,6 +146,7 @@ SFINAE(TIM17, TIM) make_reference() { return *reinterpret_cast<TIM*>(TIM17_BASE)
 #elif defined(STM32F4)
 SFINAE(TIM2 , TIM) make_reference() { return *reinterpret_cast<TIM*>(TIM2_BASE);  }
 SFINAE(TIM4 , TIM) make_reference() { return *reinterpret_cast<TIM*>(TIM4_BASE);  }
+SFINAE(TIM5 , TIM) make_reference() { return *reinterpret_cast<TIM*>(TIM5_BASE);  }
 SFINAE(TIM8 , TIM) make_reference() { return *reinterpret_cast<TIM*>(TIM8_BASE);  }
 #endif
 #endif
@@ -233,6 +234,12 @@ template<Periph p, class Pin_> constexpr PinMode TIM::pin_mode()
       else if constexpr (std::is_same_v<Pin_,PD13>) return PinMode::Alternate_2;
       else if constexpr (std::is_same_v<Pin_,PD14>) return PinMode::Alternate_2;
       else if constexpr (std::is_same_v<Pin_,PD15>) return PinMode::Alternate_2;
+
+   } else if constexpr (p == Periph::TIM5) {
+      if      constexpr (std::is_same_v<Pin_,PA0>) return PinMode::Alternate_2;
+      else if constexpr (std::is_same_v<Pin_,PA1>) return PinMode::Alternate_2;
+      else if constexpr (std::is_same_v<Pin_,PA2>) return PinMode::Alternate_2;
+      else if constexpr (std::is_same_v<Pin_,PA3>) return PinMode::Alternate_2;
    
    } else if constexpr (p == Periph::TIM8) {
       if      constexpr (std::is_same_v<Pin_,PC6>) return PinMode::Alternate_3;
@@ -336,6 +343,12 @@ template<Periph p, class Pin_> constexpr TIM::Channel TIM::channel()
       else if constexpr (std::is_same_v<Pin_,PD13>) return Channel::_2;
       else if constexpr (std::is_same_v<Pin_,PD14>) return Channel::_3;
       else if constexpr (std::is_same_v<Pin_,PD15>) return Channel::_4;
+
+   } else if constexpr (p == Periph::TIM5) {
+      if      constexpr (std::is_same_v<Pin_,PA0>) return Channel::_1;
+      else if constexpr (std::is_same_v<Pin_,PA1>) return Channel::_2;
+      else if constexpr (std::is_same_v<Pin_,PA2>) return Channel::_3;
+      else if constexpr (std::is_same_v<Pin_,PA3>) return Channel::_4;
    
    } else if constexpr (p == Periph::TIM8) {
       if      constexpr (std::is_same_v<Pin_,PC6>) return Channel::_1;
@@ -506,7 +519,7 @@ bool TIM::is_compare (TIM::Channel c)
    else return false;
 }
 
-TIM& TIM::set_compare (Channel c, uint16_t v)
+TIM& TIM::set_compare (Channel c, uint32_t v)
 {
    if      (c == Channel::_1) CCR1 = v;
    else if (c == Channel::_2) CCR2 = v;
@@ -566,6 +579,13 @@ PC6(1), PC7(2), PC8(3), PC9(4), PD2(ETR)\033[0m"
          "\033[7;33mTIM2 of STM32F4 can only work with these pins: pin(№channel) \
 PA0(1_ETR),  PA1(2), PA2(3),  PA3(4), PA5(1_ETR),\
 PA15(1,ETR), PB3(2), PB10(3), PB11(4)\033[0m"
+      );
+   } else if constexpr (tim == Periph::TIM5) {
+      static_assert (
+         std::is_same_v<Pin_, PA0 > or std::is_same_v<Pin_, PA1 > or
+         std::is_same_v<Pin_, PA2 > or std::is_same_v<Pin_, PA3 > or 
+         "\033[7;33mTIM2 of STM32F4 can only work with these pins: pin(№channel) \
+PA0(1),  PA1(2), PA2(3),  PA3(4)\033[0m"
       );
    } else if constexpr (tim == Periph::TIM8) {
       static_assert (
