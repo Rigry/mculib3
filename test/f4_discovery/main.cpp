@@ -13,19 +13,20 @@
 // #include "delay.h"
 #include "pwm_.h"
 // #include "button_old.h"
-// #include "encoder.h"
-// #include "buttons.h"
+#include "encoder_rotary.h"
+#include "button.h"
+// #include "button_old.h"
 // #include "spi.h"
-// #include "hd44780.h"
-// #include "string_buffer.h"
+#include "hd44780.h"
+#include "string_buffer.h"
 
-// using E   = mcu::PC14;       
-// using RW  = mcu::PC15;       
-// using RS  = mcu::PC13;      
-// using DB4 = mcu::PC2;       
-// using DB5 = mcu::PC3;
-// using DB6 = mcu::PC0;    
-// using DB7 = mcu::PC1;
+using E   = mcu::PC14;       
+using RW  = mcu::PC15;       
+using RS  = mcu::PC13;      
+using DB4 = mcu::PC2;       
+using DB5 = mcu::PC3;
+using DB6 = mcu::PC0;    
+using DB7 = mcu::PC1;
 
 
 /// эта функция вызываеться первой в startup файле
@@ -51,6 +52,8 @@ extern "C" void init_clock () { init_clock<F_OSC, F_CPU>(); }
 //       .wait_PLL_ready();
 // }
 
+void stepping(int qty);
+
 int main()
 {
    // constexpr auto conversion_on_channel {16};
@@ -72,10 +75,13 @@ int main()
    // volatile decltype (auto) led_blue   = Pin::make<mcu::PD15, mcu::PinMode::Output>();
    // volatile decltype (auto) led_orange = Pin::make<mcu::PD13, mcu::PinMode::Output>();
    // volatile decltype (auto) enter      = mcu::Button::make<mcu::PA8>(); 
-   volatile decltype (auto) led_red    = Pin::make<mcu::PC10, mcu::PinMode::Output>();
-   volatile decltype (auto) led_green  = Pin::make<mcu::PA15, mcu::PinMode::Output>();
+   // volatile decltype (auto) led_red    = Pin::make<mcu::PC10, mcu::PinMode::Output>();
+   // volatile decltype (auto) led_green  = Pin::make<mcu::PA15, mcu::PinMode::Output>();
+   // led_red = false;
 
-   Timer timer{500};
+
+
+   // Timer timer{500};
    // int16_t value;
    
    
@@ -115,7 +121,7 @@ int main()
 
    
 
-   // uint16_t frequency = 22000;
+   // uint16_t count{0};
    // uint16_t current = 0.5;
    // constexpr auto hd44780_pins = HD44780_pins<RS, RW, E, DB4, DB5, DB6, DB7>{};
    // String_buffer lcd;
@@ -127,9 +133,123 @@ int main()
    // lcd.line(1) << cur;
    // lcd.line(1) << "I = " << current;
 
+   // decltype(auto) dir = Pin::make<mcu::PB7, mcu::PinMode::Output>();
+   // decltype(auto) step = Pin::make<mcu::PB5, mcu::PinMode::Output>();
+   // decltype(auto) en = Pin::make<mcu::PB6, mcu::PinMode::Output>();
+   // decltype(auto) ms_1 = Pin::make<mcu::PB15,mcu::PinMode::Output>();
+   // decltype(auto) ms_2 = Pin::make<mcu::PB12,mcu::PinMode::Output>();
+
+   // int time = 1;
+   // Timer timer{1};
+   // Timer timer_{5};
+   // Timer direction{2000};
+   // Timer tim{};
+
+   // bool _ {false}; 
+
+   // volatile decltype(auto) pwm = PWM::make<mcu::Periph::TIM3, mcu::PB5>(490);
+   // pwm.out_enable();
+   // pwm.duty_cycle = 490;
+   // pwm.frequency = 800;
+
+   // volatile decltype(auto) pwm_1 = PWM::make<mcu::Periph::TIM2, mcu::PB10>(490);
+   
+   // pwm_1.duty_cycle = 490;
+   // pwm_1.frequency = 10;
+   // pwm_1.out_enable();
+
+   // int qty{4};
+
+   // volatile decltype(auto) encoder = Encoder::make<mcu::Periph::TIM8, mcu::PC6, mcu::PC7, true>();
+   // encoder.set_minus_callback([&](){dir = false;{step ^= 1;} step ^= 1;  led_red = true;});
+   // encoder.set_plus_callback ([&](){dir = true; {step ^= 1;} step ^= 1;  led_red = false;});
+
+   // auto enter = Button<mcu::PA8>();
+   // enter.set_down_callback([&]{ _ = _ ? false : true; });
+
+
+   // using Left = mcu::PB13;
+   // auto left = Button<Left>();
+   // left.set_down_callback([&]{ 
+   //    int _ = qty; 
+   //    dir = false; 
+   //    while (_){
+   //       tim.start(1);
+   //       if (tim.done()) {
+   //          step ^= 1;
+   //          timer.stop();
+   //          _--;
+   //       }
+   //    }
+   // });
+
+   // using Rigth = mcu::PB14;
+   // auto right = Button<Rigth>();
+   // right.set_down_callback([&]{ int _ = qty; dir = true; while (_){step ^= 1;}});
+
+   // decltype(auto) left  = Pin::make<mcu::PB13, mcu::PinMode::Input>();
+   // decltype(auto) right = Pin::make<mcu::PB14, mcu::PinMode::Input>();
+   // decltype(auto) enter = Pin::make<mcu::PA8, mcu::PinMode::Input>();
+
+   constexpr auto pin_mode = TIM::pin_mode<mcu::Periph::TIM8, mcu::PC6>();
+   constexpr auto channel_ = TIM::channel<mcu::Periph::TIM8, mcu::PC6>();
+   TIM& tim = mcu::make_reference<mcu::Periph::TIM8>();
+   decltype(auto) pulse = Pin::make<mcu::PC6, pin_mode>();
+   TIM::Channel channel = TIM::channel<mcu::Periph::TIM8, mcu::PC6>();
+   TIM::EnableMask enable_mask = TIM::enable_mask<channel_>();
+   mcu::make_reference<mcu::Periph::RCC>().clock_enable<mcu::Periph::TIM8>();
+   tim.template set<channel_>(TIM::CompareMode::PWMmode)
+          .set_prescaller(7200 - 1)
+          .set_auto_reload(350 - 1)
+          .set_compare(channel_, 35)
+          .set_repetition(5 - 1)
+          .set_update_generation()
+          .update_disable()
+          .set(TIM::OnePulseMode::counterStop)
+          .template preload_enable<channel_>()
+          .compare_enable(enable_mask)
+          .auto_reload_enable()
+          .counter_enable();
    
    while(1){
 
+      // if (enter) {
+      //    step ^= timer.event();
+      // } else 
+      //    step = false;
+      
+      // if (left and not right) {
+      //    en = false;
+      //    dir = false;
+      //    if (_) {
+      //       step ^= timer.event();
+      //    } else {
+      //       step ^= timer_.event();
+      //    }
+         
+      // } else if (not left and not right) {
+      //    step = false;
+      // }
+      // if (right and not left) {
+      //    dir = true;
+      //    en = false;
+      //    if (_) {
+      //       step ^= timer.event(); 
+      //    } else {
+      //       step ^= timer_.event();
+      //    }
+      // } else if (not right and not left) {
+      //    step = false;
+      // }
+
+      // if (left and right) {
+      //     _ = _ ? false : true; 
+      // }
+
+      // count = encoder;
+
+      // lcd.line(0).cursor(2) << count;
+      
       // lcd.line(0) << "t = " << temp;
       // led_red = temp >= 30;
       // // cur = adc.current;
@@ -137,8 +257,8 @@ int main()
       // led_red = pwm ^= enter; 
       // pwm.frequency = encoder;
       // value = encoder;
-      led_red = true;
-      led_green ^= timer.event();
+      
+      // led_green ^= timer.event();
       // // led_red   ^= enter;
       // led_green = value > 200 ? true : false;
       // pwm.duty_cycle += timer.event() ? step_pwm : 0;
@@ -246,4 +366,7 @@ int main()
 
    //  }
 
+
+
 }
+

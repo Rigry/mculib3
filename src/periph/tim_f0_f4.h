@@ -42,7 +42,7 @@ public:
 
    using CMSIS_type           = TIM_TypeDef;
    using CompareMode          = TIM_bits::Output_t::CompareMode;
-   // using OnePulseMode         = TIM_bits::CR1::OnePulseMode;
+   using OnePulseMode         = TIM_bits::CR1::OnePulseMode;
    // using Direction            = TIM_bits::CR1::Direction;
    using SlaveMode            = TIM_bits::SMCR::SlaveMode;
    using Trigger              = TIM_bits::SMCR::Trigger;
@@ -67,15 +67,19 @@ public:
    
    TIM&     counter_enable()                { CR1.CEN = true;     return *this; }
    TIM&     counter_disable()               { CR1.CEN = false;    return *this; }
+   TIM&     set(OnePulseMode v)             { CR1.OPM = v;        return *this; }
+   TIM&     update_disable()                { CR1.UDIS = true;    return *this; }
    TIM&     clear_counter()                 { CNT = 0;            return *this; }
-   TIM&     set_counter (uint32_t v)        { CNT = v;            return *this; }
+   TIM&     set_counter (uint16_t v)        { CNT = v;            return *this; }
    TIM&     ext_clock_enable()              { SMCR.ECE = true;    return *this; }
    TIM&     ext_clock_disable()             { SMCR.ECE = false;   return *this; }
    TIM&     set_prescaller (uint16_t v)     { PSC = v;            return *this; }
    TIM&     auto_reload_enable()            { CR1.ARPE = true;    return *this; }
    TIM&     set (SlaveMode v)               { SMCR.SMS = v;       return *this; }
    TIM&     set (Trigger v)                 { SMCR.TS  = v;       return *this; }
-   TIM&     set_auto_reload  (uint32_t v)   { ARR = v;            return *this; }
+   TIM&     set_auto_reload  (uint16_t v)   { ARR = v;            return *this; }
+   TIM&     set_repetition   (uint16_t v)   { RCR = v;            return *this; }
+   // TIM&     set_update_generation()         { EGR.UG = true;      return *this; }
    TIM&     update_interrupt_enable()       { DIER.UIE = true;    return *this; }
    TIM&     compare_enable   (uint32_t v)   { registr(CCER) |=  v; return *this; } // TODO ??????? ???? ?? ????????
    TIM&     compare_disable  (uint32_t v)   { *reinterpret_cast<__IO uint32_t*>(&CCER) &= ~v; return *this; }
@@ -485,7 +489,7 @@ TIM& TIM::compare_disable(TIM::Channel c)
 
 template<TIM::Channel c> TIM& TIM::compare_enable()
 {
-   if      constexpr  (c == Channel::_1) CCER.CC1E = true;
+   if      constexpr (c == Channel::_1) CCER.CC1E = true;
    else if constexpr (c == Channel::_2) CCER.CC2E = true;
    else if constexpr (c == Channel::_3) CCER.CC3E = true;
    else if constexpr (c == Channel::_4) CCER.CC4E = true;
