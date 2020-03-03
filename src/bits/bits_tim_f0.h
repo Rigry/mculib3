@@ -84,6 +84,18 @@ struct SR {
    bool     CC3OF :1; // Bit 11 CC3OF: Capture/Compare 3 overcapture flag
    bool     CC4OF :1; // Bit 12 CC4OF: Capture/Compare 4 overcapture flag
    uint32_t       :3; // Bit 15-13 Reserved, must be kept at reset value.
+};
+
+struct EGR {
+   bool     UG   :1; // Bit 0 Update generation
+   bool     CC1G :1; // Bit 1 Capture/Compare 1 generation
+   bool     CC2G :1; // Bit 2 Capture/Compare 2 generation
+   bool     CC3G :1; // Bit 3 Capture/Compare 3 generation
+   bool     CC4G :1; // Bit 4 Capture/Compare 4 generation
+   bool     COMG :1; // Bit 5 Capture/Compare control update generation
+   bool     TG   :1; // Bit 6 Trigger generation
+   bool     BG   :1; // Bit 7 Break generation
+   uint32_t      :8; // Bits 15:8 Reserved, must be kept at reset value.
 }__attribute__((packed));
 
 enum SelectionCompareMode { Output = 0b00, Input, InputALT, InputTRC };

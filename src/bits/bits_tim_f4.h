@@ -77,6 +77,18 @@ struct SR {
    uint32_t       :3; // Bit 15-13 Reserved, must be kept at reset value.
 }__attribute__((packed));
 
+struct EGR {
+   bool     UG   :1; // Bit 0 Update generation
+   bool     CC1G :1; // Bit 1 Capture/Compare 1 generation
+   bool     CC2G :1; // Bit 2 Capture/Compare 2 generation
+   bool     CC3G :1; // Bit 3 Capture/Compare 3 generation
+   bool     CC4G :1; // Bit 4 Capture/Compare 4 generation
+   bool     COMG :1; // Bit 5 Capture/Compare control update generation
+   bool     TG   :1; // Bit 6 Trigger generation
+   bool     BG   :1; // Bit 7 Break generation
+   uint32_t      :8; // Bits 15:8 Reserved, must be kept at reset value.
+}__attribute__((packed));
+
 enum SelectionCompareMode { Output = 0b00, Input, InputALT, InputTRC }; 
 enum Filter { No_filter = 0b0000, Div_0_N_2, Div_0_N_4,  Div_0_N_8
                      , Div_2_N_6, Div_2_N_8, Div_4_N_6,  Div_4_N_8
