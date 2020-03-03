@@ -5,7 +5,7 @@
 template <class Enable, class Dir, class Step, class Right_sense, class Left_sense>
 class Step_motor : TickSubscriber
 {
-   enum State_search    {Wait, Work, Left_, Right_slow, Right_fast, Left_slow, Left_fast,  Right_} state_search{State_search::Wait};
+   enum State_search    {Wait, Work, Left_, Right_} state_search{State_search::Wait};
    enum Speed           {Slow = 10, Fast = 1}  speed{Speed::Slow};
    enum Direction       {Left = 0, Right = 1} direction{Direction::Left};
    
@@ -43,50 +43,16 @@ public:
                coordinate = 0;
                ahead(Direction::Right, Speed::Fast);
                state_search = State_search::Right_;
-               // state_search = State_search::Right_fast;
-               // reach(200, Direction::Right, Speed::Fast);
             }
          break;
-         // case Right_fast:
-         //    if(finish) {
-         //       stop();
-         //       ahead(Direction::Left, Speed::Slow);
-         //       state_search = State_search::Left_slow;
-         //    }
-         // break;
-         // case Left_slow:
-         //    if(left) {
-         //       stop();
-         //       coordinate = 0;
-         //       ahead(Direction::Right, Speed::Fast);
-         //       state_search = State_search::Right_;
-         //    }
-         // break;
          case Right_:
             if(right) {
                stop();
                max_coordinate = coordinate;
                ahead(Direction::Left, Speed::Fast);
                state_search = State_search::Left_;
-               // state_search = State_search::Left_fast;
-               // reach(200, Direction::Left, Speed::Fast);
             }
          break;
-         // case Left_fast:
-         //    if(finish) {
-         //       stop();
-         //       ahead(Direction::Right, Speed::Slow);
-         //       state_search = State_search::Right_slow;
-         //    }
-         // break;
-         // case Right_slow:
-         //    if(right) {
-         //       stop();
-         //       max_coordinate = coordinate;
-         //       ahead(Direction::Left, Speed::Fast);
-         //       state_search = State_search::Left_;
-         //    }
-         // break;
          case Work:
             emergency_stop();
          break;
