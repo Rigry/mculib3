@@ -62,7 +62,7 @@ public:
       return encoder;
    }
 
-   uint16_t qty_click(){return tim.get_counter();}
+   uint16_t qty_click(){return tim.get_counter() / 2;}
    int16_t operator= (int16_t v){tim.set_counter(v); return *this;}
            operator  uint16_t()  {return tim.get_counter();}
    bool    operator> (int16_t v){return static_cast<int16_t> (tim.get_counter()) > v;}
@@ -79,7 +79,7 @@ public:
          return;
       }
 
-      if (qty_click() == 65535 and not minus_executed) { // 32767 = -1
+      if (qty_click() == 32767 and not minus_executed) { // 32767 = -1
          minus_executed = true;
          tim.clear_counter();
          minus_callback();
