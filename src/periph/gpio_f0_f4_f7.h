@@ -179,7 +179,7 @@ GPIO &GPIO::set(Mode v)
    }
    else if constexpr (n == 11)
    {
-      MODER.MODE10 = v;
+      MODER.MODE11 = v;
       return *this;
    }
    else if constexpr (n == 12)

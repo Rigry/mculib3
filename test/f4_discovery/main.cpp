@@ -8,8 +8,8 @@
 #include "pin.h"
 #include "timers.h"
 // #include "literals.h"
-// #include "adc.h"
-// #include "NTC_table.h"
+#include "adc.h"
+#include "NTC_table.h"
 // #include "delay.h"
 #include "pwm_.h"
 // #include "button_old.h"
@@ -19,14 +19,15 @@
 // #include "spi.h"
 #include "hd44780.h"
 #include "string_buffer.h"
+#include "modbus_master.h"
 
 using E   = mcu::PC14;       
 using RW  = mcu::PC15;       
 using RS  = mcu::PC13;      
-using DB4 = mcu::PC2;       
-using DB5 = mcu::PC3;
-using DB6 = mcu::PC0;    
-using DB7 = mcu::PC1;
+using DB4 = mcu::PC0;       
+using DB5 = mcu::PC1;
+using DB6 = mcu::PC2;    
+using DB7 = mcu::PC3;
 
 
 /// эта функция вызываеться первой в startup файле
@@ -52,7 +53,7 @@ extern "C" void init_clock () { init_clock<F_OSC, F_CPU>(); }
 //       .wait_PLL_ready();
 // }
 
-void stepping(int qty);
+// void stepping(int qty);
 
 int main()
 {
@@ -75,8 +76,11 @@ int main()
    // volatile decltype (auto) led_blue   = Pin::make<mcu::PD15, mcu::PinMode::Output>();
    // volatile decltype (auto) led_orange = Pin::make<mcu::PD13, mcu::PinMode::Output>();
    // volatile decltype (auto) enter      = mcu::Button::make<mcu::PA8>(); 
-   // volatile decltype (auto) led_red    = Pin::make<mcu::PC10, mcu::PinMode::Output>();
-   // volatile decltype (auto) led_green  = Pin::make<mcu::PA15, mcu::PinMode::Output>();
+   volatile decltype (auto) led_red    = Pin::make<mcu::PA4, mcu::PinMode::Output>();
+   volatile decltype (auto) led_green  = Pin::make<mcu::PA5, mcu::PinMode::Output>();
+   volatile decltype (auto) led_blue   = Pin::make<mcu::PA6, mcu::PinMode::Output>();
+   
+
    // led_red = false;
 
 
@@ -123,9 +127,9 @@ int main()
 
    // uint16_t count{0};
    // uint16_t current = 0.5;
-   // constexpr auto hd44780_pins = HD44780_pins<RS, RW, E, DB4, DB5, DB6, DB7>{};
-   // String_buffer lcd;
-   // HD44780 hd44780 { HD44780::make(hd44780_pins, lcd.get_buffer()) };
+   constexpr auto hd44780_pins = HD44780_pins<RS, RW, E, DB4, DB5, DB6, DB7>{};
+   String_buffer lcd;
+   HD44780 hd44780 { HD44780::make(hd44780_pins, lcd.get_buffer()) };
    // lcd.line(0).cursor(2) << "Hi, I'm V17.";
    // lcd.line(1) << "You wanna work?";
 
@@ -191,28 +195,80 @@ int main()
    // decltype(auto) right = Pin::make<mcu::PB14, mcu::PinMode::Input>();
    // decltype(auto) enter = Pin::make<mcu::PA8, mcu::PinMode::Input>();
 
-   constexpr auto pin_mode = TIM::pin_mode<mcu::Periph::TIM8, mcu::PC6>();
-   constexpr auto channel_ = TIM::channel<mcu::Periph::TIM8, mcu::PC6>();
-   TIM& tim = mcu::make_reference<mcu::Periph::TIM8>();
-   decltype(auto) pulse = Pin::make<mcu::PC6, pin_mode>();
-   TIM::Channel channel = TIM::channel<mcu::Periph::TIM8, mcu::PC6>();
-   TIM::EnableMask enable_mask = TIM::enable_mask<channel_>();
-   mcu::make_reference<mcu::Periph::RCC>().clock_enable<mcu::Periph::TIM8>();
-   tim.template set<channel_>(TIM::CompareMode::PWMmode)
-          .set_prescaller(7200 - 1)
-          .set_auto_reload(350 - 1)
-          .set_compare(channel_, 35)
-          .set_repetition(5 - 1)
-          .set_update_generation()
-          .update_disable()
-          .set(TIM::OnePulseMode::counterStop)
-          .template preload_enable<channel_>()
-          .compare_enable(enable_mask)
-          .auto_reload_enable()
-          .counter_enable();
+   struct Flash_data {
+      uint16_t factory_number = 0;
+      UART::Settings uart_set = {
+         .parity_enable  = false,
+         .parity         = USART::Parity::even,
+         .data_bits      = USART::DataBits::_8,
+         .stop_bits      = USART::StopBits::_1,
+         .baudrate       = USART::Baudrate::BR9600,
+         .res            = 0
+      };
+   } flash;
+
+   // Timer timer{500_ms};
+   Timer timer_1 {200_ms};
+
+   using TX_master  = mcu::PA2;
+   using RX_master  = mcu::PA3;
+   using RTS_master = mcu::PA15; 
+
+   struct {
+      Register<1, Modbus_function::read_03, 4> power_03;
+      Register<1, Modbus_function::read_03, 10> current_03;
+      Register<1, Modbus_function::read_03, 14> temperatura_03;
+   }modbus_master_regs;
+
+   decltype(auto) modbus_master = make_modbus_master <
+          mcu::Periph::USART2
+        , TX_master
+        , RX_master
+        , RTS_master
+    > (100_ms, flash.uart_set, modbus_master_regs);
+
+   //  volatile decltype (auto) led        = Pin::make<mcu::PA11, mcu::PinMode::Output>();
+   // constexpr auto conversion_on_channel {16};
+   // struct ADC_{
+   //    ADC_average& control     = ADC_average::make<mcu::Periph::ADC1>(conversion_on_channel);
+   //    ADC_channel& temperatura = control.add_channel<mcu::PA7>();
+   // }adc;
+
+   // adc.control.start();
+   // uint16_t t{0};
+      
+   lcd.clear();
+
+   // auto set = Button<mcu::PA12>();
+   // set.set_down_callback([&]{ led_green ^= 1;});
+
+   // auto start = Button<mcu::PB7>();
+   // start.set_down_callback([&]{ led_red ^= 1;});
    
    while(1){
 
+      modbus_master();
+      // led ^= timer_1.event();
+      // led_red = true;
+      // led_green ^= timer_1.event();
+      // if (led.is_set())   
+         led_blue = true;
+      
+      // t = adc.temperatura;
+      // t = t / conversion_on_channel;
+      // auto p = std::lower_bound(
+      //     std::begin(NTC::u2904<33,5100>),
+      //     std::end(NTC::u2904<33,5100>),
+      //     t,
+      //     std::greater<uint32_t>());
+      // t = (p - NTC::u2904<33,5100>);
+
+      
+
+      lcd.line(0).cursor(2) << modbus_master_regs.temperatura_03;
+      // lcd.line(1).cursor(2).width(2) << t << ' ';
+      lcd.line(0).cursor(5) << modbus_master_regs.current_03;
+      lcd.line(0).cursor(10) << modbus_master_regs.power_03; 
       // if (enter) {
       //    step ^= timer.event();
       // } else 
