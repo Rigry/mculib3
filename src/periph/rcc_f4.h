@@ -120,6 +120,8 @@ public:
 		else if constexpr (p == Periph::SPI2) APB1ENR.SPI2EN = true;
 		else if constexpr (p == Periph::SPI3) APB1ENR.SPI3EN = true;
 
+		else if constexpr (p == Periph::PWR) APB1ENR.PWREN = true;
+
         else static_assert ( always_false_v<decltype(p)>, "допиши clock_enable");
 	}
 
