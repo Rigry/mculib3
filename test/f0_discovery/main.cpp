@@ -6,13 +6,14 @@
 #include "periph_rcc.h"
 #include "pin.h"
 #include "timers.h"
+#include "flash.h"
 // #include "button_old.h"
 // #include "modbus_master.h"
-// #include "adc.h"
+#include "adc.h"
 // #include "syscfg_f0.h"
 // #include "exti_f0.h"
 // #include "wiegan.h"
-#include "button.h"
+// #include "button.h"
 // #include "pwm_.h"
 // #include "encoder.h"
 #include "step_motor.h"
@@ -46,15 +47,30 @@ using Right = mcu::PA5;
 
 int main()
 {
-    
-    // constexpr auto conversion_on_channel {16};
-    // struct ADC_{
-    //    ADC_average& control     = ADC_average::make<mcu::Periph::ADC1>(conversion_on_channel);
-    //    ADC_channel& uv_level    = control.add_channel<mcu::PA0>();
-    //    ADC_channel& temperature = control.add_channel<mcu::PA1>();
-    // }adc{};
+    struct Flash_data {
+        uint32_t data = 0;
+    } flash;
 
-    // adc.control.start();
+    [[maybe_unused]] auto _ = Flash_updater<
+        mcu::FLASH::Sector::_10
+      , mcu::FLASH::Sector::_9
+   >::make (&flash);
+    
+    
+    constexpr auto conversion_on_channel {16};
+    struct ADC_{
+       ADC_average& control = ADC_average::make<mcu::Periph::ADC1>(conversion_on_channel);
+       ADC_channel& u       = control.add_channel<mcu::PA0>();
+    }adc{};
+
+    volatile decltype (auto) led = Pin::make<mcu::PC9, mcu::PinMode::Output>();
+
+    adc.control.start();
+    
+    
+
+   
+
     // mcu::example::safe_flash();
     // mcu::example::flash();
 
@@ -84,11 +100,30 @@ int main()
 
     auto step_motor = Step_motor<EN, DIR, STEP, Right, Left>();
 
+    constexpr auto _3V {3 * 16 * 4095/3.3}; 
+
+    Timer timer{200_ms};
+    Timer switch_{200_ms};
+
+    uint32_t data{flash.data};
+    bool write{false};
     
     while(1){
       
         step_motor();
-      
+        
+        if (switch_.event())
+            data++;
+        led ^= timer.event();
+        if (adc.u < _3V and not write) {
+            flash.data = data;
+            write = true;
+        } else if (adc.u > _3V and write)
+        {
+            write = false;
+        }
+        
+    //   __WFI();
     }
 
 }
