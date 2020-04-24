@@ -20,6 +20,8 @@
 #include "hd44780.h"
 #include "string_buffer.h"
 #include "modbus_master.h"
+#include "pwr_control.h"
+#include "flash.h"
 
 using E   = mcu::PC14;       
 using RW  = mcu::PC15;       
@@ -76,9 +78,9 @@ int main()
    // volatile decltype (auto) led_blue   = Pin::make<mcu::PD15, mcu::PinMode::Output>();
    // volatile decltype (auto) led_orange = Pin::make<mcu::PD13, mcu::PinMode::Output>();
    // volatile decltype (auto) enter      = mcu::Button::make<mcu::PA8>(); 
-   volatile decltype (auto) led_red    = Pin::make<mcu::PA4, mcu::PinMode::Output>();
-   volatile decltype (auto) led_green  = Pin::make<mcu::PA5, mcu::PinMode::Output>();
-   volatile decltype (auto) led_blue   = Pin::make<mcu::PA6, mcu::PinMode::Output>();
+   // volatile decltype (auto) led_red    = Pin::make<mcu::PA4, mcu::PinMode::Output>();
+   // volatile decltype (auto) led_green  = Pin::make<mcu::PA5, mcu::PinMode::Output>();
+   // volatile decltype (auto) led_blue   = Pin::make<mcu::PA6, mcu::PinMode::Output>();
    
 
    // led_red = false;
@@ -126,10 +128,10 @@ int main()
    
 
    // uint16_t count{0};
-   // uint16_t current = 0.5;
-   constexpr auto hd44780_pins = HD44780_pins<RS, RW, E, DB4, DB5, DB6, DB7>{};
-   String_buffer lcd;
-   HD44780 hd44780 { HD44780::make(hd44780_pins, lcd.get_buffer()) };
+   // uint16_t current = 0.5;/
+   // constexpr auto hd44780_pins = HD44780_pins<RS, RW, E, DB4, DB5, DB6, DB7>{};
+   // String_buffer lcd;
+   // HD44780 hd44780 { HD44780::make(hd44780_pins, lcd.get_buffer()) };
    // lcd.line(0).cursor(2) << "Hi, I'm V17.";
    // lcd.line(1) << "You wanna work?";
 
@@ -195,37 +197,37 @@ int main()
    // decltype(auto) right = Pin::make<mcu::PB14, mcu::PinMode::Input>();
    // decltype(auto) enter = Pin::make<mcu::PA8, mcu::PinMode::Input>();
 
-   struct Flash_data {
-      uint16_t factory_number = 0;
-      UART::Settings uart_set = {
-         .parity_enable  = false,
-         .parity         = USART::Parity::even,
-         .data_bits      = USART::DataBits::_8,
-         .stop_bits      = USART::StopBits::_1,
-         .baudrate       = USART::Baudrate::BR9600,
-         .res            = 0
-      };
-   } flash;
+   // struct Flash_data {
+   //    uint16_t factory_number = 0;
+   //    UART::Settings uart_set = {
+   //       .parity_enable  = false,
+   //       .parity         = USART::Parity::even,
+   //       .data_bits      = USART::DataBits::_8,
+   //       .stop_bits      = USART::StopBits::_1,
+   //       .baudrate       = USART::Baudrate::BR9600,
+   //       .res            = 0
+   //    };
+   // } flash;
 
-   // Timer timer{500_ms};
-   Timer timer_1 {200_ms};
+   // // Timer timer{500_ms};
+   // Timer timer_1 {200_ms};
 
-   using TX_master  = mcu::PA2;
-   using RX_master  = mcu::PA3;
-   using RTS_master = mcu::PA15; 
+   // using TX_master  = mcu::PA2;
+   // using RX_master  = mcu::PA3;
+   // using RTS_master = mcu::PA15; 
 
-   struct {
-      Register<1, Modbus_function::read_03, 4> power_03;
-      Register<1, Modbus_function::read_03, 10> current_03;
-      Register<1, Modbus_function::read_03, 14> temperatura_03;
-   }modbus_master_regs;
+   // struct {
+   //    Register<1, Modbus_function::read_03, 4> power_03;
+   //    Register<1, Modbus_function::read_03, 10> current_03;
+   //    Register<1, Modbus_function::read_03, 14> temperatura_03;
+   // }modbus_master_regs;
 
-   decltype(auto) modbus_master = make_modbus_master <
-          mcu::Periph::USART2
-        , TX_master
-        , RX_master
-        , RTS_master
-    > (100_ms, flash.uart_set, modbus_master_regs);
+   // decltype(auto) modbus_master = make_modbus_master <
+   //        mcu::Periph::USART2
+   //      , TX_master
+   //      , RX_master
+   //      , RTS_master
+   //  > (100_ms, flash.uart_set, modbus_master_regs);
 
    //  volatile decltype (auto) led        = Pin::make<mcu::PA11, mcu::PinMode::Output>();
    // constexpr auto conversion_on_channel {16};
@@ -237,22 +239,41 @@ int main()
    // adc.control.start();
    // uint16_t t{0};
       
-   lcd.clear();
+   // lcd.clear();
 
    // auto set = Button<mcu::PA12>();
    // set.set_down_callback([&]{ led_green ^= 1;});
 
    // auto start = Button<mcu::PB7>();
    // start.set_down_callback([&]{ led_red ^= 1;});
+
+   struct Flash_data {
+        uint32_t data = 0;
+    } flash;
+
+    [[maybe_unused]] auto _ = Flash_updater<
+        mcu::FLASH::Sector::_10
+      , mcu::FLASH::Sector::_9
+   >::make (&flash);
+
+   volatile decltype(auto) pwr_control = Pwr_control::make<mcu::PWR::Threshold::_2_8V>();
+   volatile decltype (auto) led_blue   = Pin::make<mcu::PD15, mcu::PinMode::Output>();
+   Timer timer {200_ms};
    
    while(1){
 
-      modbus_master();
-      // led ^= timer_1.event();
+      // modbus_master();
+      // led_blue ^= timer.event();
       // led_red = true;
       // led_green ^= timer_1.event();
       // if (led.is_set())   
+         // led_blue = true;
+
+      // led_blue = pwr_control.is_lower();
+      if (pwr_control.is_lower()) {
          led_blue = true;
+         flash.data = 4'000;
+      }
       
       // t = adc.temperatura;
       // t = t / conversion_on_channel;
@@ -265,10 +286,10 @@ int main()
 
       
 
-      lcd.line(0).cursor(2) << modbus_master_regs.temperatura_03;
+      // lcd.line(0).cursor(2) << modbus_master_regs.temperatura_03;
       // lcd.line(1).cursor(2).width(2) << t << ' ';
-      lcd.line(0).cursor(5) << modbus_master_regs.current_03;
-      lcd.line(0).cursor(10) << modbus_master_regs.power_03; 
+      // lcd.line(0).cursor(5) << modbus_master_regs.current_03;
+      // lcd.line(0).cursor(10) << modbus_master_regs.power_03; 
       // if (enter) {
       //    step ^= timer.event();
       // } else 
