@@ -78,6 +78,8 @@ public:
 		else if constexpr (p == Periph::ADC1)   APB2ENR.ADC1EN = true;
 
 		else if constexpr (p == Periph::SYSCFG) APB2ENR.SYSCFGEN = true;
+
+		else if constexpr (p == Periph::PWR)    APB1ENR.PWREN = true;
 		
         else static_assert ( always_false_v<decltype(p)>, "допиши clock_enable");
 	}
