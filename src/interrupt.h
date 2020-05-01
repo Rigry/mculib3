@@ -51,9 +51,7 @@ public:
     }
 };
 
-#if defined(STM32F4)
 Interrupt interrupt_pvd {PVD_IRQn};
-#endif
 
 Interrupt interrupt_spi1 {SPI1_IRQn};
 #if defined(STM32F4)
