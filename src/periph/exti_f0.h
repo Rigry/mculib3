@@ -69,8 +69,8 @@ template<int first, int last = 0>
 EXTI& EXTI::clear_interrupt_flags()
 {
     static_assert (
-        first >= 0 and first <= 15 and last >=0 and last <= 15,
-        "first and last ust be from 0 to 15"
+        first >= 0 and first <= 16 and last >=0 and last <= 16,
+        "first and last ust be from 0 to 16"
     );
 
     std::bitset<32> mask;
