@@ -94,7 +94,7 @@
         "cwd": "${workspaceRoot}",
         "executable": "${workspaceRoot}/test/f4_discovery/build/main.elf",
         "name": "Debug (ST-Util)",
-        "svdFile": "/net/factory/users/aag/code/cmsis-svd/data/STMicro/STM32F405.svd",
+        "svdFile": "/home/ap/code/mculib3/STM32F4_files/svd/STM32F405.svd",
         // "device": "STM32F429",
         "v1": false
     }
