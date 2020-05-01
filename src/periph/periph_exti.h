@@ -7,7 +7,7 @@
 #elif defined(STM32F1)
    #include "exti_f1.h"
 #elif defined(STM32F4)
-   #error exti for STM32F4 not realized
+   #include "exti_f4.h"
 #elif defined(STM32F7)
    #error exti for STM32F7 not realized
 #endif

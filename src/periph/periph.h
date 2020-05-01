@@ -124,7 +124,7 @@ enum class Periph {
 
 #if defined(STM32F0)
     EXTI, SYSCFG, 
-#elif defined(STM32F1)
+#elif defined(STM32F1) or defined(STM32F4)
     EXTI,
 #endif
 
