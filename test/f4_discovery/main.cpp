@@ -256,24 +256,31 @@ int main()
       , mcu::FLASH::Sector::_9
    >::make (&flash);
 
-   volatile decltype(auto) pwr_control = Pwr_control::make<mcu::PWR::Threshold::_2_8V>();
+   volatile decltype(auto) pwr_control = Pwr_control::make<mcu::PWR::Threshold::_2_9V>();
    volatile decltype (auto) led_blue   = Pin::make<mcu::PD15, mcu::PinMode::Output>();
    Timer timer {200_ms};
+
+   volatile decltype (auto) led_red    = Pin::make<mcu::PD14, mcu::PinMode::Output>();
    
+   pwr_control.set_callback([&]{
+      led_red ^= 1;
+      flash.data = 4'000;
+   });
+
    while(1){
 
       // modbus_master();
-      // led_blue ^= timer.event();
+      // led_red ^= timer.event();
       // led_red = true;
       // led_green ^= timer_1.event();
       // if (led.is_set())   
          // led_blue = true;
 
       // led_blue = pwr_control.is_lower();
-      if (pwr_control.is_lower()) {
-         led_blue = true;
-         flash.data = 4'000;
-      }
+      // if (pwr_control.is_lower()) {
+      //    led_blue = true;
+      //    // flash.data = 4'000;
+      // }
       
       // t = adc.temperatura;
       // t = t / conversion_on_channel;
