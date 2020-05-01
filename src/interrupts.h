@@ -4,9 +4,7 @@
 #include "periph_dma.h"
 #include "periph_spi.h"
 #include "periph_tim.h"
-#if defined (STM32F0) or (STM32F1)
-    #include "periph_exti.h"
-#endif
+#include "periph_exti.h"
 
 
 #if defined (STM32F0)
@@ -123,7 +121,6 @@
 
 #elif defined (STM32F4)
     extern "C" void WWDG_IRQHandler               () { while(1) {} }
-    extern "C" void PVD_IRQHandler                () { while(1) {} }
     extern "C" void TAMP_STAMP_IRQHandler         () { while(1) {} }
     extern "C" void RTC_WKUP_IRQHandler           () { while(1) {} }
     extern "C" void FLASH_IRQHandler              () { while(1) {} }
@@ -180,6 +177,8 @@
     extern "C" void TIM8_TRG_COM_TIM14_IRQHandler () { while(1) {} }
     extern "C" void TIM8_CC_IRQHandler            () { while(1) {} }
 
+
+    extern "C" void PVD_IRQHandler()          { if (REF(EXTI).is_interrupt(16)) {interrupt_pvd.interrupt();} REF(EXTI).clear_interrupt_flags<16>();}
     
     extern "C" void USART1_IRQHandler()       { interrupt_usart1.interrupt(); mcu::make_reference<mcu::Periph::USART1>().clear_interrupt_flags();} 
     extern "C" void USART2_IRQHandler()       { interrupt_usart2.interrupt(); mcu::make_reference<mcu::Periph::USART2>().clear_interrupt_flags();}

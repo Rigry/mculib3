@@ -51,11 +51,16 @@ public:
     }
 };
 
+#if defined(STM32F4)
+Interrupt interrupt_pvd {PVD_IRQn};
+#endif
+
 Interrupt interrupt_spi1 {SPI1_IRQn};
 #if defined(STM32F4)
 Interrupt interrupt_spi2 {SPI2_IRQn};
 Interrupt interrupt_spi3 {SPI3_IRQn};
 #endif
+
 
 Interrupt interrupt_usart1 {USART1_IRQn};
 #if defined(STM32F1)
@@ -196,6 +201,9 @@ auto& get_interrupt()
 #if defined(STM32F4)
     else if constexpr (v == mcu::Periph::SPI2) return interrupt_spi2;
     else if constexpr (v == mcu::Periph::SPI3) return interrupt_spi3;
+#endif
+#if defined(STM32F4)
+    else if constexpr (v == mcu::Periph::PWR) return interrupt_pvd;
 #endif
 }
 
