@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 
-#if   defined(STM32F030x6)
+#if   defined(STM32F030x6) or defined(STM32F051x8)
    #define STM32F0
 #elif defined(STM32F103xB)
    #define STM32F1
