@@ -7,8 +7,12 @@
 #include "periph_exti.h"
 
 
+#if defined(STM32F051x8)
+extern "C" void PVD_IRQHandler(){ if (REF(EXTI).is_interrupt(16)) {interrupt_pvd.interrupt();} REF(EXTI).clear_interrupt_flags<16>();}
+#endif
+
 #if defined (STM32F0)
-    extern "C" void PVD_IRQHandler(){ if (REF(EXTI).is_interrupt(16)) {interrupt_pvd.interrupt();} REF(EXTI).clear_interrupt_flags<16>();}
+    
     extern "C" void DMA1_Channel1_IRQHandler() { interrupt_DMA1_channel1.interrupt(); mcu::make_reference<mcu::Periph::DMA1>().clear_interrupt_flags(mcu::DMA::Channel::_1);}
     extern "C" void DMA1_Channel2_3_IRQHandler()     { 
         interrupt_DMA1_channel2.interrupt(); mcu::make_reference<mcu::Periph::DMA1>().clear_interrupt_flags(mcu::DMA::Channel::_2); 
