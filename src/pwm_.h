@@ -36,7 +36,7 @@ class PWM
          if ((v != value) and (v >= parent.min_frequency))
          {
             value = v;
-            parent.CNT = (F_CPU / value - 1);
+            parent.CNT = (F_CPU / value - 1) / 2;
             parent.tim.set_auto_reload(parent.CNT);
             parent.duty_cycle.update();
          }
