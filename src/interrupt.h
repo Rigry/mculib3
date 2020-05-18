@@ -202,7 +202,7 @@ auto& get_interrupt()
     else if constexpr (v == mcu::Periph::SPI2) return interrupt_spi2;
     else if constexpr (v == mcu::Periph::SPI3) return interrupt_spi3;
 #endif
-#if defined(STM32F4) or defined(STM32F0)
+#if defined(STM32F4) or defined(STM32F051x8)
     else if constexpr (v == mcu::Periph::PWR) return interrupt_pvd;
 #endif
 }
