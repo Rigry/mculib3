@@ -146,7 +146,7 @@ int main()
    // decltype(auto) ms_2 = Pin::make<mcu::PB12,mcu::PinMode::Output>();
 
    // int time = 1;
-   // Timer timer{1};
+   // Timer timer{1};enter
    // Timer timer_{5};
    // Timer direction{2000};
    // Timer tim{};
@@ -248,10 +248,7 @@ int main()
    // start.set_down_callback([&]{ led_red ^= 1;});
 
    struct Flash_data {
-        uint32_t data = 0;
-    } flash;
-
-    [[maybe_unused]] auto _ = Flash_updater<
+        uint32_t data = 0;enter
         mcu::FLASH::Sector::_10
       , mcu::FLASH::Sector::_9
    >::make (&flash);

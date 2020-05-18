@@ -6,6 +6,7 @@
 #include "interrupt.h"
 
 using PWR = mcu::PWR;
+using EXTI = mcu::EXTI;
 using Edge   = mcu::EXTI::Edge;
 
 class Pwr_control
@@ -41,9 +42,9 @@ public:
    static auto& make()
    {
       static Pwr_control pwr_control {
-           mcu::make_reference<Periph::PWR>()
-         , mcu::make_reference<Periph::EXTI>()
-         , get_interrupt<Periph::PWR>()
+           mcu::make_reference<mcu::Periph::PWR>()
+         , mcu::make_reference<mcu::Periph::EXTI>()
+         , get_interrupt<mcu::Periph::PWR>()
       };
 
       pwr_control.exti.enable_interrupt(16);
@@ -51,7 +52,7 @@ public:
       pwr_control.interrupt_pvd.enable();
 
       auto &rcc = REF(RCC);
-      rcc.clock_enable<Periph::PWR>();
+      rcc.clock_enable<mcu::Periph::PWR>();
 
       pwr_control.pwr.set(threshold)
                  .enable();
