@@ -55,7 +55,7 @@ public:
       rcc.clock_enable<mcu::Periph::PWR>();
 
       pwr_control.pwr.set(threshold)
-                 .enable();
+                     .enable();
 
 
       return pwr_control;

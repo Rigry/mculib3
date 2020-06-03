@@ -12,8 +12,8 @@ namespace mcu::PWR_bits {
       bool      CSBF :1; // Bit 3 CSBF: Clear standby flag
       bool      PVDE :1; // Bit 4 PVDE: Power voltage detector enable
       Threshold PLS  :3; // Bits 7:5 PLS[2:0]: PVD level selection
-      bool DBP  :1; // Bit 8 DBP: Disable RTC domain write protection
-      uint32_t  :23; // Bits 31:9 Reserved, must be kept at reset value.
+      bool      DBP  :1; // Bit 8 DBP: Disable RTC domain write protection
+      uint32_t       :23; // Bits 31:9 Reserved, must be kept at reset value.
    }__attribute__((packed));
 
    struct CSR {
@@ -24,7 +24,7 @@ namespace mcu::PWR_bits {
       uint32_t   :4; // Bits 7:4 Reserved, must be kept at reset value
       bool EWUP1 :1; // Enable WKUPx pin
       bool EWUP2 :1; // Enable WKUPx pin
-      uint32_t   :1; // Bit 10 Reserved, must be kept at reset value.
+      bool EWUP3 :1; // Enable WKUPx pin
       bool EWUP4 :1; // Enable WKUPx pin
       bool EWUP5 :1; // Enable WKUPx pin (available only on STM32F070xB and STM32F030xC devices)
       bool EWUP6 :1; // Enable WKUPx pin (available only on STM32F070xB and STM32F030xC devices)

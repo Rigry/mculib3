@@ -102,9 +102,9 @@ struct APB1ENR {
    bool     I2C1EN   :1;
    bool     I2C2EN   :1;
    bool     USBEN    :1;
-   uint32_t          :3;
+   uint32_t          :4;
    bool     PWREN    :1;
-   uint32_t res8     :3;
+   uint32_t          :3;
 }__attribute__((packed));
 
 } // namespace mcu::RCC_bits {
