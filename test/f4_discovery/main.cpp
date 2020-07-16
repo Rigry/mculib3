@@ -6,22 +6,22 @@
 #include "periph_rcc.h"
 #include "periph_flash.h"
 #include "pin.h"
-#include "timers.h"
+// #include "timers.h"
 // #include "literals.h"
 #include "adc.h"
 #include "NTC_table.h"
 // #include "delay.h"
-#include "pwm_.h"
+// #include "pwm_.h"
 // #include "button_old.h"
-#include "encoder_rotary.h"
-#include "button.h"
+// #include "encoder_rotary.h"
+// #include "button.h"
 // #include "button_old.h"
 // #include "spi.h"
 #include "hd44780.h"
 #include "string_buffer.h"
-#include "modbus_master.h"
-#include "pwr_control.h"
-#include "flash.h"
+// #include "modbus_master.h"
+// #include "pwr_control.h"
+// #include "flash.h"
 
 using E   = mcu::PC14;       
 using RW  = mcu::PC15;       
@@ -59,11 +59,13 @@ extern "C" void init_clock () { init_clock<F_OSC, F_CPU>(); }
 
 int main()
 {
-   // constexpr auto conversion_on_channel {16};
-   // struct {
-   //    ADC_average& control       = ADC_average::make<mcu::Periph::ADC1>(conversion_on_channel);
-   //    ADC_channel& temperature   = control.add_channel<mcu::PA2>();
-   // } adc{};
+   constexpr auto conversion_on_channel {96};
+   struct {
+      ADC_average& control       = ADC_average::make<mcu::Periph::ADC1>(conversion_on_channel);
+      ADC_channel& temperature   = control.add_channel<mcu::PA7>();
+   } adc{};
+
+   adc.control.start();
    
 
    // struct {
@@ -129,11 +131,11 @@ int main()
 
    // uint16_t count{0};
    // uint16_t current = 0.5;/
-   // constexpr auto hd44780_pins = HD44780_pins<RS, RW, E, DB4, DB5, DB6, DB7>{};
-   // String_buffer lcd;
-   // HD44780 hd44780 { HD44780::make(hd44780_pins, lcd.get_buffer()) };
-   // lcd.line(0).cursor(2) << "Hi, I'm V17.";
-   // lcd.line(1) << "You wanna work?";
+   constexpr auto hd44780_pins = HD44780_pins<RS, RW, E, DB4, DB5, DB6, DB7>{};
+   String_buffer lcd;
+   HD44780 hd44780 { HD44780::make(hd44780_pins, lcd.get_buffer()) };
+   lcd.line(0).cursor(2) << "Hi, I'm V17.";
+   lcd.line(1) << static_cast<uint16_t>(adc.temperature);
 
    // lcd.line(0) << "t = " << temp;
    // lcd.line(1) << cur;
@@ -247,22 +249,23 @@ int main()
    // auto start = Button<mcu::PB7>();
    // start.set_down_callback([&]{ led_red ^= 1;});
 
-   struct Flash_data {
-        uint32_t data = 0;enter
-        mcu::FLASH::Sector::_10
-      , mcu::FLASH::Sector::_9
-   >::make (&flash);
+   // struct Flash_data {
+   //      uint32_t data = 0;enter
+   //      mcu::FLASH::Sector::_10
+   //    , mcu::FLASH::Sector::_9
+   // >::make (&flash);
 
-   volatile decltype(auto) pwr_control = Pwr_control::make<mcu::PWR::Threshold::_2_9V>();
-   volatile decltype (auto) led_blue   = Pin::make<mcu::PD15, mcu::PinMode::Output>();
-   Timer timer {200_ms};
+   // volatile decltype(auto) pwr_control = Pwr_control::make<mcu::PWR::Threshold::_2_9V>();
+   // volatile decltype (auto) led_blue   = Pin::make<mcu::PD15, mcu::PinMode::Output>();
+   // Timer timer {200_ms};
 
-   volatile decltype (auto) led_red    = Pin::make<mcu::PD14, mcu::PinMode::Output>();
+   // volatile decltype (auto) led_red    = Pin::make<mcu::PD14, mcu::PinMode::Output>();
    
-   pwr_control.set_callback([&]{
-      led_red ^= 1;
-      flash.data = 4'000;
-   });
+   // pwr_control.set_callback([&]{
+   //    led_red ^= 1;
+   //    flash.data = 4'000;
+   // });
+   uint32_t t{0};
 
    while(1){
 
@@ -272,6 +275,8 @@ int main()
       // led_green ^= timer_1.event();
       // if (led.is_set())   
          // led_blue = true;
+      t = (adc.temperature / conversion_on_channel);
+      lcd.line(1) << t << clear_after;
 
       // led_blue = pwr_control.is_lower();
       // if (pwr_control.is_lower()) {

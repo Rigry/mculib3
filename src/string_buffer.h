@@ -25,6 +25,7 @@ public:
     String_buffer (){screen.fill(' ');}
     String_buffer& operator<< (std::string_view string);
     String_buffer& operator<< (int number);
+    String_buffer& operator<< (uint32_t number);
     String_buffer& operator<< (char);
     String_buffer& operator<< (String_buffer_ref& function);
     String_buffer& div_1000 (int number);
@@ -119,6 +120,21 @@ String_buffer& String_buffer::operator<< (int number)
 {
     char string[10];
     sprintf(string, "%d", number);
+    std::string_view str (string);
+    auto qty_space = (width_size > str.size()) ? (width_size - str.size()) : 0;
+
+    while (qty_space--) {
+        *this << ' ';
+    }
+    *this << string;
+    width_size = 0;
+    return *this;
+}
+
+String_buffer& String_buffer::operator<< (uint32_t number)
+{
+    char string[10];
+    sprintf(string, "%ld", number);
     std::string_view str (string);
     auto qty_space = (width_size > str.size()) ? (width_size - str.size()) : 0;
 
