@@ -18,6 +18,8 @@ public:
    PWR& set(Threshold v) {CR.PLS = v;     return *this;}
    bool is_lower()       {return CSR.PVDO;}
 
+   PWR& RTC_protection (bool v = true) {CR.DBP = v; return *this;}
+
 };
 
 #if not defined(USE_MOCK_PWR)
