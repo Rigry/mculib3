@@ -107,5 +107,22 @@ struct APB1ENR {
    uint32_t          :3;
 }__attribute__((packed));
 
+struct BDCR {
+
+   enum Drive {lower = 0b00, medium_high = 0b01, medium_low, higher};
+   enum Clock {no_clock = 0b00, LSE = 0b01, LSI, HSE};
+
+   bool  LSEON  :1; // Bit 0 LSEON: LSE oscillator enable
+   bool  LSERDY :1; // Bit 1 LSERDY: LSE oscillator ready
+   bool  LSEBYP :1; // Bit 2 LSEBYP: LSE oscillator bypass
+   Drive LSEDRV :2; // Bits 4:3 LSEDRV LSE oscillator drive capability
+   uint32_t     :3; // Bits 7:5 Reserved, must be kept at reset value.
+   Clock RTCSEL :2; // Bits 9:8 RTCSEL[1:0]: RTC clock source selection
+   uint32_t     :5; // Bits 14:10 Reserved, must be kept at reset value.
+   bool RTCEN   :1; // Bit 15 RTCEN: RTC clock enable
+   bool BDRST   :1; // Bit 16 BDRST: RTC domain software reset
+   uint32_t     :15; // Bits 31:17 Reserved, must be kept at reset value.
+}__attribute__((packed));
+
 } // namespace mcu::RCC_bits {
 
