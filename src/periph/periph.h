@@ -27,6 +27,7 @@
 #endif
 
 #undef RCC
+#undef RTC
 #undef PWR
 #undef GPIOA
 #undef GPIOB
@@ -75,7 +76,7 @@
 namespace mcu {
 
 enum class Periph {
-    RCC, PWR,
+    RCC, RTC, PWR,
 #if   defined(STM32F0)
     GPIOA, GPIOB, GPIOC, GPIOD, GPIOF,
 #elif defined(STM32F1)
