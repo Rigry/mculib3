@@ -3,18 +3,18 @@
 #include <cstdint>
 
 namespace mcu::RTC_bits {
+   enum Hour_format {_24 = 0b0, _12};
    struct TR {
-      enum Hour_format {_24 = 0b0, _12};
-      uint32_t SU  :4; // Bits 3:0 SU[3:0]: Second units in BCD format
-      uint32_t ST  :3; // Bits 6:4 ST[2:0]: Second tens in BCD format
-      uint32_t     :1; // Bit 7 Reserved, must be kept at reset value.
-      uint32_t MNU :4; // Bits 11:8 MNU[3:0]: Minute units in BCD format
-      uint32_t MNT :3; // Bits 14:12 MNT[2:0]: Minute tens in BCD format
-      uint32_t     :1; // Bit 15 Reserved, must be kept at reset value.
-      uint32_t HU  :4; // Bits 19:16 HU[3:0]: Hour units in BCD format
-      uint32_t HT  :2; // Bits 21:20 HT[1:0]: Hour tens in BCD format
-      Hour_format  :1; // Bit 22 PM: AM/PM notation
-      uint32_t     :9; // Bits 31-23 Reserved, must be kept at reset value
+      uint32_t    SU  :4; // Bits 3:0 SU[3:0]: Second units in BCD format
+      uint32_t    ST  :3; // Bits 6:4 ST[2:0]: Second tens in BCD format
+      uint32_t        :1; // Bit 7 Reserved, must be kept at reset value.
+      uint32_t    MNU :4; // Bits 11:8 MNU[3:0]: Minute units in BCD format
+      uint32_t    MNT :3; // Bits 14:12 MNT[2:0]: Minute tens in BCD format
+      uint32_t        :1; // Bit 15 Reserved, must be kept at reset value.
+      uint32_t    HU  :4; // Bits 19:16 HU[3:0]: Hour units in BCD format
+      uint32_t    HT  :2; // Bits 21:20 HT[1:0]: Hour tens in BCD format
+      Hour_format PM  :1; // Bit 22 PM: AM/PM notation
+      uint32_t        :9; // Bits 31-23 Reserved, must be kept at reset value
    }__attribute__((packed));
 
    struct DR {
@@ -33,7 +33,6 @@ namespace mcu::RTC_bits {
    struct CR {
       enum Wakeup_clock {div_16 = 0b000, div_8 = 0b001, div_4 = 0b010, div_2 = 0b11};
       enum Edge {rising = 0b0, falling};
-      enum Hour_format {_24 = 0b0, _12};
       enum Calibration {_512_Hz = 0b0, _1_Hz};
       enum Polarity {high = 0b0, low};
       enum Output {disabled = 0b00, alarm = 0b01,reserved, wakeup};
