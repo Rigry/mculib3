@@ -14,7 +14,7 @@ class RCC {
 	volatile RCC_bits::APB2ENR APB2ENR;    // APB2 peripheral clock enable register, offset: 0x18
 	volatile RCC_bits::APB1ENR APB1ENR;    // APB1 peripheral clock enable register, offset: 0x1C
 	volatile RCC_bits::BDCR    BDCR;       // Backup domain control register,        offset: 0x20
-	volatile uint32_t          CSR;        // clock control & status register,       offset: 0x24
+	volatile RCC_bits::CSR     CSR;        // clock control & status register,       offset: 0x24
 	volatile uint32_t          AHBRSTR;    // AHB peripheral reset register,         offset: 0x28
 	volatile uint32_t          CFGR2;      // clock configuration register 2,        offset: 0x2C
 	volatile uint32_t          CFGR3;      // clock configuration register 3,        offset: 0x30
@@ -45,6 +45,9 @@ public:
 	RCC& wait_PLL_ready() { while (not CR.PLLRDY) {} return *this; }
 	RCC& on_LSE        () { BDCR.LSEON = true;       return *this; }
 	RCC& wait_LSE_ready() { while (not BDCR.LSERDY){}return *this; }
+	RCC& on_LSI        () { CSR.LSION = true;        return *this; }
+	RCC& wait_LSI_ready() {while (not CSR.LSIRDY) {} return *this; }
+	RCC& backup_domain_reset(bool reset) { BDCR.BDRST = reset; return *this; }
 
 	size_t get_APB_clock()
 	{
