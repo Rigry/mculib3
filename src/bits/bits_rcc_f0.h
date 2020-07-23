@@ -124,5 +124,20 @@ struct BDCR {
    uint32_t     :15; // Bits 31:17 Reserved, must be kept at reset value.
 }__attribute__((packed));
 
+struct CSR {
+   bool LSION      :1; // Bit 0 LSION: LSI oscillator enable
+   bool LSIRDY     :1; // Bit 1 LSIRDY: LSI oscillator ready
+   uint32_t        :21; // Bits 22:2 Reserved, must be kept at reset value.
+   bool V18PWRRSTF :1; // Bit 23 V18PWRRSTF: Reset flag of the 1.8 V domain.
+   bool RMVF       :1; // Bit 24 RMVF: Remove reset flag
+   bool OBLRSTF    :1; // Bit 25 OBLRSTF: Option byte loader reset flag
+   bool PINRSTF    :1; // Bit 26 PINRSTF: PIN reset flag
+   bool PORRSTF    :1; // Bit 27 PORRSTF: POR/PDR reset flag
+   bool SFTRSTF    :1; // Bit 28 SFTRSTF: Software reset flag
+   bool IWDGRSTF   :1; // Bit 29 IWDGRSTF: Independent watchdog reset flag
+   bool WWDGRSTF   :1; // Bit 30 WWDGRSTF: Window watchdog reset flag
+   bool LPWRRSTF   :1; // Bit 31 LPWRRSTF: Low-power reset flag
+}__attribute__((packed));
+
 } // namespace mcu::RCC_bits {
 
