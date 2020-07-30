@@ -29,6 +29,7 @@ public:
     String_buffer& operator<< (char);
     String_buffer& operator<< (String_buffer_ref& function);
     String_buffer& div_1000 (int number);
+    String_buffer& _10      (int number);
     String_buffer& line   (size_t string);
     String_buffer& width  (size_t width );
     String_buffer& cursor (size_t cursor);
@@ -154,6 +155,16 @@ String_buffer& String_buffer::div_1000 (int number)
     _ /= 10;
     if (_ < 10)  *this << 0  << _;
     else         *this << _;
+    return *this;
+}
+
+String_buffer& String_buffer::_10 (int number)
+{
+    if (number < 10) {
+        *this << 0 << number % 10;
+    } else {
+        *this << number;
+    }
     return *this;
 }
 
