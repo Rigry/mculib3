@@ -29,6 +29,9 @@ namespace mcu {
       using CMSIS_type    = RTC_TypeDef;
       using Hour_format   = RTC_bits::Hour_format;
       using Day           = RTC_bits::DR::Day;
+      using Units         = RTC_bits::Units;
+      using Tens_min      = RTC_bits::Tens_min;
+      using Tens_hour     = RTC_bits::Tens_hour;
 
       auto& like_CMSIS() { return *reinterpret_cast<CMSIS_type*>(this); } 
 
@@ -41,6 +44,20 @@ namespace mcu {
       RTC& set (Hour_format format)   {CR.FMT = format;        return *this;}
       RTC& prediv_s (uint16_t prediv) {PRER.PREDIV_S = prediv; return *this;}
       RTC& prediv_a (uint16_t prediv) {PRER.PREDIV_A = prediv; return *this;}
+
+      RTC& set_time (uint32_t v) {*reinterpret_cast<__IO uint32_t*>(&TR) = v; return *this;}
+      RTC& set_date (uint32_t v) {*reinterpret_cast<__IO uint32_t*>(&DR) = v; return *this;}
+
+      uint16_t read_hour  (){return TR.HT  * 10 + TR.HU;}
+      uint16_t read_minute(){return TR.MNT * 10 + TR.MNU;}
+      uint16_t read_second(){return TR.ST  * 10 + TR.SU;}
+
+      uint16_t read_year (){return DR.YT * 10 + DR.YU;}
+      uint16_t read_month(){return DR.MT * 10 + DR.MU;}
+      uint16_t read_date (){return DR.DT * 10 + DR.DU;}
+      uint16_t read_day  (){return DR.WDU;}
+
+      
    };
 
 #if not defined(USE_MOCK_RTC)

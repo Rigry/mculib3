@@ -4,15 +4,18 @@
 
 namespace mcu::RTC_bits {
    enum Hour_format {_24 = 0b0, _12};
+   enum Units {_0 = 0b0000, _1_unit, _2_unit, _3_unit, _4_unit, _5_unit, _6_unit, _7_unit, _8_unit, _9_unit};
+   enum Tens_min  {_0_min = 0b000, _1_min, _2_min, _3_min, _4_min, _5_min};
+   enum Tens_hour  {_0_hour = 0b00, _1_hour, _2_hour};
    struct TR {
-      uint32_t    SU  :4; // Bits 3:0 SU[3:0]: Second units in BCD format
-      uint32_t    ST  :3; // Bits 6:4 ST[2:0]: Second tens in BCD format
+      uint8_t     SU  :4; // Bits 3:0 SU[3:0]: Second units in BCD format
+      uint8_t     ST  :3; // Bits 6:4 ST[2:0]: Second tens in BCD format
       uint32_t        :1; // Bit 7 Reserved, must be kept at reset value.
-      uint32_t    MNU :4; // Bits 11:8 MNU[3:0]: Minute units in BCD format
-      uint32_t    MNT :3; // Bits 14:12 MNT[2:0]: Minute tens in BCD format
+      uint8_t     MNU :4; // Bits 11:8 MNU[3:0]: Minute units in BCD format
+      uint8_t     MNT :3; // Bits 14:12 MNT[2:0]: Minute tens in BCD format
       uint32_t        :1; // Bit 15 Reserved, must be kept at reset value.
-      uint32_t    HU  :4; // Bits 19:16 HU[3:0]: Hour units in BCD format
-      uint32_t    HT  :2; // Bits 21:20 HT[1:0]: Hour tens in BCD format
+      uint8_t     HU  :4; // Bits 19:16 HU[3:0]: Hour units in BCD format
+      uint8_t     HT  :2; // Bits 21:20 HT[1:0]: Hour tens in BCD format
       Hour_format PM  :1; // Bit 22 PM: AM/PM notation
       uint32_t        :9; // Bits 31-23 Reserved, must be kept at reset value
    }__attribute__((packed));
@@ -24,7 +27,7 @@ namespace mcu::RTC_bits {
       uint32_t     :2; // Bits 7:6 Reserved, must be kept at reset value.
       uint32_t MU  :4; // Bits 11:8 MU: Month units in BCD format
       uint32_t MT  :1; // Bit 12 MT: Month tens in BCD format
-      Day      WDU :3; // Bits 15:13 WDU[2:0]: Week day units
+      uint32_t WDU :3; // Bits 15:13 WDU[2:0]: Week day units
       uint32_t YU  :4; // Bits 19:16 YU[3:0]: Year units in BCD format
       uint32_t YT  :4; // Bits 23:20 YT[3:0]: Year tens in BCD format
       uint32_t     :8; // Bits 31:24 Reserved, must be kept at reset value
