@@ -29,6 +29,7 @@ public:
 	using PLLsource     = RCC_bits::CFGR::PLLsource;
 	using PLLmultiplier = RCC_bits::CFGR::PLLmultiplier;
 	using RTC_Clock     = RCC_bits::BDCR::Clock;
+	using Drive         = RCC_bits::BDCR::Drive;
 
 	auto& like_CMSIS() { return *reinterpret_cast<CMSIS_type*>(this); }
 
@@ -38,6 +39,7 @@ public:
 	RCC& set (PLLsource     v) { CFGR.PLLSRC = v; return *this; }
 	RCC& set (PLLmultiplier v) { CFGR.PLLMUL = v; return *this; }
 	RCC& set (RTC_Clock     v) { BDCR.RTCSEL = v; return *this; }
+	RCC& set (Drive         v) { BDCR.LSEDRV = v; return *this; }
 
 	RCC& on_HSE        () { CR.HSEON = true;         return *this; }
 	RCC& wait_HSE_ready() { while (not CR.HSERDY) {} return *this; }
@@ -48,6 +50,7 @@ public:
 	RCC& on_LSI        () { CSR.LSION = true;        return *this; }
 	RCC& wait_LSI_ready() {while (not CSR.LSIRDY) {} return *this; }
 	RCC& backup_domain_reset(bool reset) { BDCR.BDRST = reset; return *this; }
+	bool clock_running () {return BDCR.RTCEN;}
 
 	size_t get_APB_clock()
 	{
