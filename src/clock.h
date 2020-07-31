@@ -9,58 +9,43 @@ using RTC = mock::RTC;
 using RTC = mcu::RTC;
 #endif
 
-struct Date {
-   uint16_t year;
-   uint16_t month;
-   uint16_t day;
-   uint16_t date;
-   uint16_t hour;
-   uint16_t minute;
-   uint16_t second;
-};
-
+template <class Date>
 class Clock 
 {
    RTC& rtc;
-   Date date_;
+   Date& date_;
 
-   Clock(RTC& rtc) : rtc{rtc}{}
+   Clock(RTC& rtc, Date& date_) : rtc{rtc}, date_{date_}{}
 
-   uint32_t time_mask (uint16_t hour, uint16_t minute, uint16_t second)
+   uint32_t time_mask (Date date)
    {
-      return ( (static_cast<uint32_t>(hour   / 10) << 20) 
-             | (static_cast<uint32_t>(hour   % 10) << 16)
-             | (static_cast<uint32_t>(minute / 10) << 12) 
-             | (static_cast<uint32_t>(minute % 10) << 8)
-             | (static_cast<uint32_t>(second / 10) << 4)
-             | (static_cast<uint32_t>(second % 10)) );
+      return ( (static_cast<uint32_t>(date.hour   / 10) << 20) 
+             | (static_cast<uint32_t>(date.hour   % 10) << 16)
+             | (static_cast<uint32_t>(date.minute / 10) << 12) 
+             | (static_cast<uint32_t>(date.minute % 10) << 8)
+             | (static_cast<uint32_t>(date.second / 10) << 4)
+             | (static_cast<uint32_t>(date.second % 10)) );
    }
 
-   uint32_t date_mask (uint16_t year, uint16_t day, uint16_t month, uint16_t date)
+   uint32_t date_mask (Date date)
    {
-      return ( (static_cast<uint32_t>(year  / 10) << 20)
-             | (static_cast<uint32_t>(year  % 10) << 16)  
-             | (static_cast<uint32_t>(day       ) << 13)
-             | (static_cast<uint32_t>(month / 10) << 12)
-             | (static_cast<uint32_t>(month % 10) << 8)
-             | (static_cast<uint32_t>(date  / 10) << 4)
-             | (static_cast<uint32_t>(date  % 10)) );
+      return ( (static_cast<uint32_t>(date.year  / 10) << 20)
+             | (static_cast<uint32_t>(date.year  % 10) << 16)  
+             | (static_cast<uint32_t>(date.day       ) << 13)
+             | (static_cast<uint32_t>(date.month / 10) << 12)
+             | (static_cast<uint32_t>(date.month % 10) << 8)
+             | (static_cast<uint32_t>(date.date  / 10) << 4)
+             | (static_cast<uint32_t>(date.date  % 10)) );
    }
 
 public:
-   static auto& make(uint16_t year, uint16_t month, uint16_t day, uint16_t date, uint16_t hour, uint16_t minute, uint16_t second)
+   
+   static auto& make (Date& date)
    {
       static Clock clock {
-         mcu::make_reference<mcu::Periph::RTC>()
+         mcu::make_reference<mcu::Periph::RTC>(),
+         date
       };
-
-      clock.date_.year = year;
-      clock.date_.month = month;
-      clock.date_.day = day;
-      clock.date_.date = date;
-      clock.date_.hour = hour;
-      clock.date_.minute = minute;
-      clock.date_.second = second;
 
       auto &rcc = REF(RCC);
       rcc.on_LSI()
@@ -78,8 +63,8 @@ public:
                .wait_on_initialization()
                .prediv_a(111) 
                .prediv_s(346)
-               .set_time(clock.time_mask(hour, minute, second))
-               .set_date(clock.date_mask(year, day, month, date))
+               .set_time(clock.time_mask(date))
+               .set_date(clock.date_mask(date))
                .off_initialization()
                .on_protection();
       }
@@ -96,5 +81,15 @@ public:
    uint16_t date  (){ return rtc.read_date (); }
    uint16_t day   (){ return rtc.read_day  (); }
 
-   
+   void set_time(Date& date) 
+   {
+      rtc.off_protection()
+         .on_initialization()
+         .wait_on_initialization()
+         .set_time(time_mask(date))
+         .set_date(date_mask(date))
+         .off_initialization()
+         .on_protection();
+   }
+
 };
