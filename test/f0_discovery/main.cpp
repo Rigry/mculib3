@@ -13,7 +13,7 @@
 // #include "syscfg_f0.h"
 // #include "exti_f0.h"
 // #include "wiegan.h"
-// #include "button.h"
+#include "button.h"
 // #include "pwm_.h"
 // #include "encoder.h"
 // #include "step_motor.h"
@@ -55,6 +55,7 @@ using DB5   = mcu::PA4;
 using DB6   = mcu::PA5;    
 using DB7   = mcu::PA6;
 
+using Enter = mcu::PC14;
 
 constexpr auto day_of_week = std::array {
     "no", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вск"
@@ -70,13 +71,14 @@ int main()
         uint16_t year   = 20;
         uint16_t month  = 7;
         uint16_t day    = 5;
-        uint16_t date   = 30;
-        uint16_t hour   = 14;
-        uint16_t minute = 18;
+        uint16_t date   = 31;
+        uint16_t hour   = 16;
+        uint16_t minute = 53;
         uint16_t second = 0;
     }date;
 
-    volatile decltype(auto) clock = Clock::make(date.year, date.month, date.day, date.date, date.hour, date.minute, date.second); 
+    // volatile decltype(auto) clock = Clock::make(date.year, date.month, date.day, date.date, date.hour, date.minute, date.second);
+    volatile decltype(auto) clock = Clock<Date>::make(date); 
     
     decltype(auto) led = Pin::make<mcu::PC8,mcu::PinMode::Output>();
     Timer timer{200};
@@ -85,6 +87,16 @@ int main()
     constexpr auto hd44780_pins = HD44780_pins<RS, RW, E, DB4, DB5, DB6, DB7>{};
     String_buffer lcd {};
     HD44780 hd44780 { HD44780::make(hd44780_pins, lcd.get_buffer()) };
+
+    auto enter = Button<Enter>();
+    enter.set_down_callback([&]{
+        date.hour = 19;
+        date.minute = 20;
+        date.day = 6;
+        date.date = 1;
+        date.month = 8;
+        clock.set_time(date);
+    });
 
     while(1){
       
