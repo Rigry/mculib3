@@ -77,7 +77,6 @@ int main()
         uint16_t second = 0;
     }date;
 
-    // volatile decltype(auto) clock = Clock::make(date.year, date.month, date.day, date.date, date.hour, date.minute, date.second);
     volatile decltype(auto) clock = Clock<Date>::make(date); 
     
     decltype(auto) led = Pin::make<mcu::PC8,mcu::PinMode::Output>();
