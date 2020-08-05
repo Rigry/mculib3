@@ -52,24 +52,24 @@ public:
          .wait_LSI_ready();
 
       if (not rcc.clock_running()) {
-      rcc.clock_enable<mcu::Periph::PWR>();
-      auto &pwr = REF(PWR);
-      pwr.RTC_protection();
-      rcc.set(mcu::RCC::RTC_Clock::LSI);
-      rcc.clock_enable<mcu::Periph::RTC>();
+         rcc.clock_enable<mcu::Periph::PWR>();
+         auto &pwr = REF(PWR);
+         pwr.RTC_protection();
+         rcc.set(mcu::RCC::RTC_Clock::LSI);
+         
+         rcc.clock_enable<mcu::Periph::RTC>();
 
-      clock.rtc.off_protection()
-               .on_initialization()
-               .wait_on_initialization()
-               .prediv_a(111) 
-               .prediv_s(346)
-               .set_time(clock.time_mask(date))
-               .set_date(clock.date_mask(date))
-               .off_initialization()
-               .on_protection();
+         clock.rtc.off_protection()
+                  .on_initialization()
+                  .wait_on_initialization()
+                  .prediv_a(111) 
+                  .prediv_s(346)
+                  .set_time(clock.time_mask(date))
+                  .set_date(clock.date_mask(date))
+                  .off_initialization()
+                  .on_protection();
       }
       return clock;
-
    }
 
    uint16_t hour  (){ return rtc.read_hour  (); }
@@ -91,5 +91,17 @@ public:
          .off_initialization()
          .on_protection();
    }
+
+   void save_date()
+   {
+      date_.hour   = rtc.read_hour  ();
+      date_.minute = rtc.read_minute();
+      date_.day    = rtc.read_day   ();      
+      date_.date   = rtc.read_date  (); 
+      date_.month  = rtc.read_month ();
+      date_.year   = rtc.read_year  ();  
+   }
+
+   Date date_struct(){save_date(); return date_;}
 
 };
