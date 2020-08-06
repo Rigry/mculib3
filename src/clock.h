@@ -102,6 +102,6 @@ public:
       date_.year   = rtc.read_year  ();  
    }
 
-   Date date_struct(){save_date(); return date_;}
+   Date& date_struct(){save_date(); return date_;}
 
 };
