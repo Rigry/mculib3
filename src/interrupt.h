@@ -51,6 +51,10 @@ public:
     }
 };
 
+#if defined(STM32F0)
+Interrupt interrupt_rtc {RTC_IRQn};
+#endif
+
 #if defined(STM32F051x8) or defined(STM32F1) or defined(STM32F4)   
 Interrupt interrupt_pvd {PVD_IRQn};
 #endif
@@ -204,6 +208,10 @@ auto& get_interrupt()
 #endif
 #if defined(STM32F4) or defined(STM32F051x8)
     else if constexpr (v == mcu::Periph::PWR) return interrupt_pvd;
+#endif
+
+#if defined(STM32F0)
+    else if constexpr (v == mcu::Periph::RTC) return interrupt_rtc;
 #endif
 }
 

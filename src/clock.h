@@ -48,14 +48,15 @@ public:
       };
 
       auto &rcc = REF(RCC);
-      rcc.on_LSI()
-         .wait_LSI_ready();
+      
 
       if (not rcc.clock_running()) {
          rcc.clock_enable<mcu::Periph::PWR>();
          auto &pwr = REF(PWR);
          pwr.RTC_protection();
-         rcc.set(mcu::RCC::RTC_Clock::LSI);
+         rcc.set(mcu::RCC::RTC_Clock::LSE);
+         rcc.on_LSE()
+         .wait_LSE_ready();
          
          rcc.clock_enable<mcu::Periph::RTC>();
 

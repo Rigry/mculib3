@@ -15,11 +15,12 @@ using ADC = mock::ADC;
 #else
 using ADC = mcu::ADC;
 #endif
-
+#if defined (STM32F4)
 #if defined(USE_MOCK_ADCC)
 using ADCC = mock::ADCC;
 #else
 using ADCC = mcu::ADCC;
+#endif
 #endif
 
 #if defined(USE_MOCK_DMA)
@@ -144,7 +145,7 @@ ADC_average& ADC_average::make (size_t conversion_qty)
            .dma_enable()
            .set (mcu::ADC::DMA_mode::circular); // no choice yet
 #if defined (STM32F0)
-    res.adc.set (mcu::ADC::Clock::PCLKdiv8)      // no choice yet
+    res.adc.set (mcu::ADC::Clock::PCLKdiv4)      // no choice yet
            .set (mcu::ADC::Sample_time::Default);// no choice yet
 #elif defined (STM32F4)
     res.adcc.set(mcu::ADCC::Clock::PCLKdiv8);

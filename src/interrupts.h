@@ -58,6 +58,8 @@ extern "C" void PVD_IRQHandler(){ if (REF(EXTI).is_interrupt(16)) {interrupt_pvd
         REF(EXTI).clear_interrupt_flags<4,15>();
     }
 
+    // extern "C" void RTC_IRQHandler() {interrupt_rtc.interrupt(); REF(EXTI).clear_interrupt_flags<17>();}
+
 #elif defined (STM32F1)
     // список прерываний, которые не описаны
     extern "C" void WWDG_IRQHandler            () { while(1) {} }

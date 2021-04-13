@@ -69,11 +69,11 @@ int main()
 {
     struct Date {
         uint16_t year   = 20;
-        uint16_t month  = 7;
+        uint16_t month  = 8;
         uint16_t day    = 5;
-        uint16_t date   = 31;
-        uint16_t hour   = 16;
-        uint16_t minute = 53;
+        uint16_t date   = 7;
+        uint16_t hour   = 10;
+        uint16_t minute = 30;
         uint16_t second = 0;
     }date;
 
@@ -96,6 +96,9 @@ int main()
         date.month = 8;
         clock.set_time(date);
     });
+
+    Timer delay{3_s};
+    while(not delay.done()){}
 
     while(1){
       
