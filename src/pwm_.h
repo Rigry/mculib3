@@ -95,6 +95,9 @@ public:
       pwm.tim.template set<channel_>(TIM::CompareMode::PWMmode)
           .template preload_enable<channel_>()
           .auto_reload_enable()
+#if defined (STM32F0)
+          .main_output_enable()
+#endif
           .counter_enable();
 
       pwm.frequency = pwm.min_frequency;

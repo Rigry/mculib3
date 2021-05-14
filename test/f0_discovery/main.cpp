@@ -5,25 +5,14 @@
 #define F_CPU   48000000UL
 #include "periph_rcc.h"
 #include "pin.h"
+// #include "pwm_.h"
 #include "timers.h"
 #include "flash.h"
-// #include "button_old.h"
-// #include "modbus_master.h"
-// #include "adc.h"
-// #include "syscfg_f0.h"
-// #include "exti_f0.h"
-// #include "wiegan.h"
+// #include <tuple>
+// #include <array>
+#include "seven_segment_indicator.h"
 #include "button.h"
-// #include "pwm_.h"
-// #include "encoder.h"
-// #include "step_motor.h"
-#include "clock.h"
-// #include "example/example_adc.h"
-// #include "example/example_modbus_master.h"
-// #include "example_flash.h"
-// #include "example_safe_flash.h"
-#include "string_buffer.h"
-#include "hd44780.h"
+#include "buzzer.h"
 
 
 /// эта функция вызываеться первой в startup файле
@@ -41,82 +30,140 @@ extern "C" void init_clock ()
         .wait_PLL_ready();
 }
 
-using EN    = mcu::PA2;
-using DIR   = mcu::PA3;
-using STEP  = mcu::PA1;
-using Left  = mcu::PA4;
-using Right = mcu::PA5;
+using A  = mcu::PA6;
+using B  = mcu::PA7;
+using C  = mcu::PB0;
+using D  = mcu::PB1;
+using E  = mcu::PB2;
+using F  = mcu::PB10;
+using G  = mcu::PB11;
+using H  = mcu::PB12;
+using K1 = mcu::PA15;
+using K2 = mcu::PB3;
+using K3 = mcu::PB6;
+using K4 = mcu::PB7;
+using K5 = mcu::PB8;
+using K6 = mcu::PB9;
 
-using RS    = mcu::PA0;  
-using E     = mcu::PA1;       
-using RW    = mcu::PA2;           
-using DB4   = mcu::PA3;       
-using DB5   = mcu::PA4;
-using DB6   = mcu::PA5;    
-using DB7   = mcu::PA6;
+using LEVEL = mcu::PC8;
+using COVER = mcu::PC9;
 
-using Enter = mcu::PC14;
+// time setting buttons
+using TIME_UP   = mcu::PB5;
+using TIME_DOWN = mcu::PB4;
+// temperature setting buttons
+using TEMP_UP   = mcu::PA11;
+using TEMP_DOWN = mcu::PA10;
+// control buttons
+using START = mcu::PF7;
+using MODE  = mcu::PB13;
+using F_EN  = mcu::PA12;
 
-constexpr auto day_of_week = std::array {
-    "no", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вск"
-};
+using LED_M1   = mcu::PB14;
+using LED_M2   = mcu::PB15;
+using LED_M3   = mcu::PA9;
 
-constexpr std::string_view day_of_week_to_string(int i) {
-    return day_of_week[i];
-}
+using BUZZER = mcu::PA8;
+
+void down (int increment = 10, uint8_t& t) 
+    {
+        t++;
+    }
+
 
 int main()
 {
-    struct Date {
-        uint16_t year   = 20;
-        uint16_t month  = 8;
-        uint16_t day    = 5;
-        uint16_t date   = 7;
-        uint16_t hour   = 10;
-        uint16_t minute = 30;
-        uint16_t second = 0;
-    }date;
+    // decltype(auto) k1 = Pin::make<K1_, mcu::PinMode::Output>();
+    // k1 = true;
 
-    volatile decltype(auto) clock = Clock<Date>::make(date); 
+    // auto led = make_pins<mcu::PinMode::Output, A_, B_, C_, D_, E_, F_, G_, H_>();
     
-    decltype(auto) led = Pin::make<mcu::PC8,mcu::PinMode::Output>();
-    Timer timer{200};
-    volatile uint16_t hour{0};
 
-    constexpr auto hd44780_pins = HD44780_pins<RS, RW, E, DB4, DB5, DB6, DB7>{};
-    String_buffer lcd {};
-    HD44780 hd44780 { HD44780::make(hd44780_pins, lcd.get_buffer()) };
+    // std::tuple<int, int, int, int, int, int, int, int> symbols [] = {
+    //     std::make_tuple(0, 0, 0, 0, 0, 0, 1, 1),
+    //     std::make_tuple(1, 0, 0, 1, 1, 1, 1, 1),
+    //     std::make_tuple(0, 0, 1, 0, 0, 1, 0, 1) 
+    // };
 
-    auto enter = Button<Enter>();
-    enter.set_down_callback([&]{
-        date.hour = 19;
-        date.minute = 20;
-        date.day = 6;
-        date.date = 1;
-        date.month = 8;
-        clock.set_time(date);
-    });
+    // led = symbols[2];
 
-    Timer delay{3_s};
-    while(not delay.done()){}
+//     constexpr auto conversion_on_channel {16};
+// struct ADC_{
+//    ADC_average& control     = ADC_average::make<mcu::Periph::ADC1>(conversion_on_channel);
+//    ADC_channel& temperature = control.add_channel<mcu::PA0>();
+// };
+
+    auto[led_m_1, led_m_2] = make_pins<mcu::PinMode::Output, LED_M1, LED_M2>();
+    decltype (auto) pwm = PWM::make<mcu::Periph::TIM1, mcu::PA8>();
+    Buzzer buzzer{pwm};
+
+    auto time_up   = Button<TIME_UP>();
+    auto time_down = Button<TIME_DOWN>();
+    auto temp_up   = Button<TEMP_UP>();
+    auto temp_down = Button<TEMP_DOWN>();
+    auto start     = Button<START>();
+    auto mode      = Button<MODE>();
+    // auto f_en      = Button<F_EN>();
+
+    volatile uint8_t t{21};
+    volatile uint8_t n{59};
+    volatile uint8_t p{43};
+
+    // time_up.set_down_callback(
+    //     [&]{n++; 
+    //     buzzer.brief();}
+    // );
+    
+
+    time_up.set_increment_callback(
+        [&](auto i){down(i, t);
+        });
+
+    
+
+    // time_down.set_down_callback(
+    //     [&]{n--; 
+    //     buzzer.brief();}
+    // );
+
+    // temp_up.set_down_callback(
+    //     [&]{t++; 
+    //     buzzer.longer();}
+    // );
+
+    // temp_down.set_down_callback(
+    //     [&]{t--; 
+    //     buzzer.longer();}
+    // );
+    
+
+    // SSI<A, B, C, D, E, F, G, H, K1, K2, K3, K4, K5, K6> ssi{};
+
+    // Timer timer {500_ms};
+    // Timer timer1 {100_ms};
+
+    // bool f{false};
 
     while(1){
-      
-    led ^= timer.event();
-    lcd.line(0).cursor(4)._10(clock.hour());
-    lcd.line(0).cursor(6) << ":";
-    lcd.line(0).cursor(7)._10(clock.minute());
-    lcd.line(0).cursor(9) << ":";
-    lcd.line(0).cursor(10)._10(clock.second());
-    lcd.line(1).cursor(0) << day_of_week_to_string(clock.day());
-    lcd.line(1).cursor(8)._10(clock.date());
-    lcd.line(1).cursor(10) << ".";
-    lcd.line(1).cursor(11)._10(clock.month());
-    lcd.line(1).cursor(13) << ".";
-    lcd.line(1).cursor(14)._10(clock.year());
 
-    //   __WFI();
+            // ssi.buffer[0] = t / 10;
+            // ssi.buffer[1] = t % 10;
+            // ssi.buffer[2] = n / 10;
+            // ssi.buffer[3] = n % 10;
+            // ssi.buffer[4] = p / 10;
+            // ssi.buffer[5] = p % 10;
+            buzzer.longer();
+
+            // ssi.point[1] ^= timer.event();
+            // ssi.point[3] ^= timer1.event();
+            // led_m_3 = true;
+    
     }
+
+    
+    
+      __WFI();
+    
 
 }
 

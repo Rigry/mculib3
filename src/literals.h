@@ -14,3 +14,4 @@ constexpr uint32_t operator "" _from1000 (unsigned long long val) { return val; 
 constexpr uint32_t operator "" _page     (unsigned long long val) { return val; }
 constexpr uint32_t operator "" _us       (unsigned long long val) { return val; }
 constexpr uint32_t operator "" _mA       (unsigned long long val) { return val; }
+// constexpr uint32_t operator "" _C        (unsigned long long val) { return val; }
