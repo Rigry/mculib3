@@ -30,23 +30,23 @@ extern "C" void init_clock ()
         .wait_PLL_ready();
 }
 
-using A  = mcu::PA6;
-using B  = mcu::PA7;
+using A  = mcu::PB10;
+using B  = mcu::PB2;
 using C  = mcu::PB0;
-using D  = mcu::PB1;
-using E  = mcu::PB2;
-using F  = mcu::PB10;
+using D  = mcu::PA7;
+using E  = mcu::PA6;
+using F  = mcu::PB12;
 using G  = mcu::PB11;
-using H  = mcu::PB12;
-using K1 = mcu::PA15;
-using K2 = mcu::PB3;
-using K3 = mcu::PB6;
-using K4 = mcu::PB7;
-using K5 = mcu::PB8;
-using K6 = mcu::PB9;
+using H  = mcu::PB1;
+using K1 = mcu::PB3;
+using K2 = mcu::PA15;
+using K3 = mcu::PB9;
+using K4 = mcu::PB8;
+using K5 = mcu::PB7;
+using K6 = mcu::PB6;
 
-using LEVEL = mcu::PC8;
-using COVER = mcu::PC9;
+using LEVEL = mcu::PC13;
+using COVER = mcu::PC14;
 
 // time setting buttons
 using TIME_UP   = mcu::PB5;
@@ -59,16 +59,24 @@ using START = mcu::PF7;
 using MODE  = mcu::PB13;
 using F_EN  = mcu::PA12;
 
+// generator control
+using UZ1 = mcu::PA2;
+using UZ2 = mcu::PA3;
+using UZ3 = mcu::PA4;
+// heater control
+using HEATER = mcu::PA5;
+
 using LED_M1   = mcu::PB14;
 using LED_M2   = mcu::PB15;
 using LED_M3   = mcu::PA9;
+using LED_F_EN = mcu::PF6;
 
 using BUZZER = mcu::PA8;
 
-void down (int increment = 10, uint8_t& t) 
-    {
-        t++;
-    }
+// void down (int increment = 1, uint8_t& t) 
+// {
+//     t++;
+// }
 
 
 int main()
@@ -93,9 +101,12 @@ int main()
 //    ADC_channel& temperature = control.add_channel<mcu::PA0>();
 // };
 
-    auto[led_m_1, led_m_2] = make_pins<mcu::PinMode::Output, LED_M1, LED_M2>();
+    auto[led_m_1, led_m_2, led_m_3, led_f] = make_pins<mcu::PinMode::Output, LED_M1, LED_M2, LED_M3, LED_F_EN>();
     decltype (auto) pwm = PWM::make<mcu::Periph::TIM1, mcu::PA8>();
     Buzzer buzzer{pwm};
+
+    auto[uz_1, uz_2, uz_3, heater] = make_pins<mcu::PinMode::Output, UZ1, UZ2, UZ3, HEATER>();
+    auto[level, cover] = make_pins<mcu::PinMode::Input, LEVEL, COVER>();
 
     auto time_up   = Button<TIME_UP>();
     auto time_down = Button<TIME_DOWN>();
@@ -109,50 +120,69 @@ int main()
     volatile uint8_t n{59};
     volatile uint8_t p{43};
 
-    // time_up.set_down_callback(
-    //     [&]{n++; 
-    //     buzzer.brief();}
-    // );
+    time_up.set_down_callback(
+        [&]{n++; 
+        buzzer.brief();}
+    );
     
 
-    time_up.set_increment_callback(
-        [&](auto i){down(i, t);
-        });
+    // time_up.set_increment_callback(
+    //     [&](auto i){down(i, t);
+    // });
 
     
 
-    // time_down.set_down_callback(
-    //     [&]{n--; 
-    //     buzzer.brief();}
-    // );
+    time_down.set_down_callback(
+        [&]{n--; 
+        buzzer.brief();}
+    );
 
-    // temp_up.set_down_callback(
-    //     [&]{t++; 
-    //     buzzer.longer();}
-    // );
+    temp_up.set_down_callback(
+        [&]{t++; 
+        buzzer.brief();}
+    );
 
-    // temp_down.set_down_callback(
-    //     [&]{t--; 
-    //     buzzer.longer();}
-    // );
+    temp_down.set_down_callback(
+        [&]{t--; 
+        buzzer.brief();}
+    );
     
 
-    // SSI<A, B, C, D, E, F, G, H, K1, K2, K3, K4, K5, K6> ssi{};
+    SSI<A, B, C, D, E, F, G, H, K1, K2, K3, K4, K5, K6> ssi{};
 
     // Timer timer {500_ms};
     // Timer timer1 {100_ms};
 
-    // bool f{false};
+    volatile bool l{false};
+    volatile bool c{false};
+
+// ssi.dinamic_test();
+// ssi.dinamic_test();
+    
 
     while(1){
 
-            // ssi.buffer[0] = t / 10;
-            // ssi.buffer[1] = t % 10;
-            // ssi.buffer[2] = n / 10;
-            // ssi.buffer[3] = n % 10;
-            // ssi.buffer[4] = p / 10;
-            // ssi.buffer[5] = p % 10;
-            buzzer.longer();
+            // l = level;
+            // c = cover;
+            // led_m_1 = l;
+            // led_m_2 = l;
+            // led_m_3 = c;
+            // led_f   = c;
+            // uz_1 = 1;
+            // uz_2 = 1;
+            // uz_3 = 1;
+            // heater = 1;
+
+            // ssi.test(Sign::Level);
+            
+
+            // ssi.buffer[0] = n % 10;
+            // ssi.buffer[1] = n / 10;
+            // ssi.buffer[2] = t % 10;
+            // ssi.buffer[3] = t / 10;
+            // ssi.buffer[4] = p % 10;
+            // ssi.buffer[5] = p / 10;
+            // buzzer.longer();
 
             // ssi.point[1] ^= timer.event();
             // ssi.point[3] ^= timer1.event();

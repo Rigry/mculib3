@@ -19,7 +19,22 @@ static std::tuple<int, int, int, int, int, int, int> symbols [] = {
    std::make_tuple(1, 0, 0, 1, 0, 0, 0), // 10 H
    std::make_tuple(1, 1, 1, 0, 0, 0, 1), // 11 L
    std::make_tuple(1, 1, 1, 1, 1, 1, 1), // 12 Space
-   std::make_tuple(1, 1, 1, 1, 1, 1, 0)  // 13 -
+   std::make_tuple(1, 1, 1, 1, 1, 1, 0), // 13 -
+   std::make_tuple(0, 1, 1, 0, 0, 0, 1), // 14 C
+   std::make_tuple(1, 1, 1, 1, 1, 1, 1), // 15 reserved
+   std::make_tuple(1, 1, 1, 1, 1, 1, 1), // 16 reserved
+   std::make_tuple(1, 1, 1, 1, 1, 1, 1), // 17 reserved
+   std::make_tuple(1, 1, 1, 1, 1, 1, 1), // 18 reserved
+   std::make_tuple(1, 1, 1, 1, 1, 1, 1), // 19 reserved
+   std::make_tuple(1, 1, 1, 1, 1, 1, 1), // 20 reserved
+
+   std::make_tuple(1, 1, 1, 1, 1, 1, 0), // 21 G
+   std::make_tuple(1, 0, 1, 1, 1, 1, 0), // 22 B
+   std::make_tuple(0, 1, 1, 1, 1, 1, 0), // 23 A
+   std::make_tuple(1, 1, 1, 1, 1, 0, 0), // 24 F
+   std::make_tuple(1, 1, 1, 1, 0, 1, 0), // 25 E
+   std::make_tuple(1, 1, 1, 0, 1, 1, 0), // 26 D
+   std::make_tuple(1, 1, 0, 1, 1, 1, 0), // 27 C
 };
 
 static std::tuple<int, int, int, int, int, int> indicator [] = {
@@ -32,7 +47,10 @@ static std::tuple<int, int, int, int, int, int> indicator [] = {
 };
 
 enum class Sign {
-   Level = 11, Space = 12, Hyphen = 13, E = 14
+   Level = 11, Space = 12, Hyphen = 13, Cover = 14
+};
+enum class Segment {
+   G = 21, B = 22, A = 23, F = 24, E = 25, D = 26, C = 27, H = 28
 };
 
 template<class A, class B, class C, class D, class E, class F, class G, class H, class ... K>
@@ -51,6 +69,8 @@ private:
    Pin& h {Pin::make<H, mcu::PinMode::Output>()};
 
    std::tuple<Pin, Pin, Pin, Pin, Pin, Pin> k = make_pins<mcu::PinMode::Output, K...>();
+
+   Timer timer;
 
 public:
 
@@ -72,6 +92,28 @@ public:
    SSI (uint8_t refresh = 2_ms)
         : refresh {refresh}
       
-   { tick_subscribe(); }
+   { tick_subscribe(); 
+      dinamic_test();
+      dinamic_test(); }
+
+   void test(Sign sign) {
+      for(auto i = 0; i < qty; i++) {
+         buffer[i] = static_cast<uint8_t>(sign);
+         point[i]  = true;
+      }
+   }
+
+   void dinamic_test() {
+      
+      for (auto i = 22; i <= 27; i++) {
+         for (auto j = 0; j < qty; j++) {
+            buffer[j] = i;
+            point[j] ^= 1;
+         }
+         timer.start(70_ms);
+         while (not timer.done()){}
+         timer.stop();
+      }
+   }
 
 };
