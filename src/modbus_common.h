@@ -2,7 +2,9 @@
 
 enum class Modbus_function : uint8_t {
       read_03       = 0x03
+    , read_04       = 0x04
     , force_coil_05 = 0x05
+    , write_06      = 0x06
     , write_16      = 0x10
 };
 
