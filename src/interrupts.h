@@ -116,7 +116,7 @@ extern "C" void PVD_IRQHandler(){ if (REF(EXTI).is_interrupt(16)) {interrupt_pvd
     extern "C" void USART1_IRQHandler          () { interrupt_usart1.interrupt(); mcu::make_reference<mcu::Periph::USART1>().clear_interrupt_flags();}
     extern "C" void USART2_IRQHandler          () { interrupt_usart2.interrupt(); mcu::make_reference<mcu::Periph::USART2>().clear_interrupt_flags();}
     extern "C" void USART3_IRQHandler          () { interrupt_usart3.interrupt(); mcu::make_reference<mcu::Periph::USART3>().clear_interrupt_flags();}
-    extern "C" void USART4_IRQHandler          () { interrupt_usart4.interrupt(); mcu::make_reference<mcu::Periph::USART4>().clear_interrupt_flags();}
+    // extern "C" void USART4_IRQHandler          () { interrupt_usart4.interrupt(); mcu::make_reference<mcu::Periph::USART4>().clear_interrupt_flags();}
 
     extern "C" void DMA1_Channel1_IRQHandler   () { interrupt_DMA1_channel1.interrupt(); mcu::make_reference<mcu::Periph::DMA1>().clear_interrupt_flags(mcu::DMA::Channel::_1);}
     extern "C" void DMA1_Channel2_IRQHandler   () { interrupt_DMA1_channel2.interrupt(); mcu::make_reference<mcu::Periph::DMA1>().clear_interrupt_flags(mcu::DMA::Channel::_2);}
