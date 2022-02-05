@@ -209,7 +209,7 @@ bool Flash_updater_impl<Data,sector...>::is_read()
     #endif
     for (size_t i{0}; i < memory.size(); i++) {
         memory_offset = std::find_if(memory[i].begin(), memory[i].end()
-            , [&](auto& word) bool {
+            , [&](auto& word) {
                 auto& pair = word.pair;
                 if (pair.offset < sizeof(Data)) {
                     copy[pair.offset] = pair.value;

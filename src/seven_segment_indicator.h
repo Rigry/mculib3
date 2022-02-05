@@ -77,7 +77,7 @@ public:
    volatile uint8_t buffer [qty] = {0};
    volatile bool    point  [qty] = {false};
 
-   void notify() override 
+   void notify()  override
    {
       if (++tick == refresh) {
          tick = 0;
@@ -92,9 +92,11 @@ public:
    SSI (uint8_t refresh = 2_ms)
         : refresh {refresh}
       
-   { tick_subscribe(); 
+   { 
+      tick_subscribe();
       dinamic_test();
-      dinamic_test(); }
+      dinamic_test(); 
+      }
 
    void test(Sign sign) {
       for(auto i = 0; i < qty; i++) {

@@ -10,7 +10,7 @@
 #include "flash.h"
 // #include <tuple>
 // #include <array>
-#include "seven_segment_indicator.h"
+#include "seven_segment_indicator_2.h"
 #include "button.h"
 #include "buzzer.h"
 
@@ -150,8 +150,8 @@ int main()
 
     SSI<A, B, C, D, E, F, G, H, K1, K2, K3, K4, K5, K6> ssi{};
 
-    // Timer timer {500_ms};
-    // Timer timer1 {100_ms};
+    Timer timer {500_ms};
+    Timer timer1 {100_ms};
 
     volatile bool l{false};
     volatile bool c{false};
@@ -176,17 +176,17 @@ int main()
             // ssi.test(Sign::Level);
             
 
-            // ssi.buffer[0] = n % 10;
-            // ssi.buffer[1] = n / 10;
-            // ssi.buffer[2] = t % 10;
-            // ssi.buffer[3] = t / 10;
-            // ssi.buffer[4] = p % 10;
-            // ssi.buffer[5] = p / 10;
+            ssi.buffer[0] = n % 10;
+            ssi.buffer[1] = n / 10;
+            ssi.buffer[2] = t % 10;
+            ssi.buffer[3] = t / 10;
+            ssi.buffer[4] = p % 10;
+            ssi.buffer[5] = p / 10;
             // buzzer.longer();
 
-            // ssi.point[1] ^= timer.event();
-            // ssi.point[3] ^= timer1.event();
-            // led_m_3 = true;
+            ssi.point[1] ^= timer.event();
+            ssi.point[3] ^= timer1.event();
+            led_m_3 = true;
     
     }
 
