@@ -25,9 +25,11 @@ public:
     String_buffer (){screen.fill(' ');}
     String_buffer& operator<< (std::string_view string);
     String_buffer& operator<< (int number);
+    String_buffer& operator<< (uint32_t number);
     String_buffer& operator<< (char);
     String_buffer& operator<< (String_buffer_ref& function);
     String_buffer& div_1000 (int number);
+    String_buffer& _10      (int number);
     String_buffer& line   (size_t string);
     String_buffer& width  (size_t width );
     String_buffer& cursor (size_t cursor);
@@ -130,6 +132,21 @@ String_buffer& String_buffer::operator<< (int number)
     return *this;
 }
 
+String_buffer& String_buffer::operator<< (uint32_t number)
+{
+    char string[10];
+    sprintf(string, "%ld", number);
+    std::string_view str (string);
+    auto qty_space = (width_size > str.size()) ? (width_size - str.size()) : 0;
+
+    while (qty_space--) {
+        *this << ' ';
+    }
+    *this << string;
+    width_size = 0;
+    return *this;
+}
+
 String_buffer& String_buffer::div_1000 (int number)
 {
     *this << (number / 1000);
@@ -138,6 +155,16 @@ String_buffer& String_buffer::div_1000 (int number)
     _ /= 10;
     if (_ < 10)  *this << 0  << _;
     else         *this << _;
+    return *this;
+}
+
+String_buffer& String_buffer::_10 (int number)
+{
+    if (number < 10) {
+        *this << 0 << number % 10;
+    } else {
+        *this << number;
+    }
     return *this;
 }
 

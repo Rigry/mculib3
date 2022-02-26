@@ -1,6 +1,6 @@
 TARGET_F0 = main
 DEBUG = 1
-OPT = -O0
+OPT = -Os
 CPPSTD =-std=c++17
 BUILD_DIR = build
 
@@ -58,7 +58,7 @@ MCU_F0 = $(CPU_F0) -mthumb $(FPU_F0) $(FLOAT-ABI_F0)
 ASFLAGS_F0 = $(MCU_F0) $(OPT) -Wall -fdata-sections -ffunction-sections
 
 CFLAGS_F0  = $(MCU_F0) $(C_DEFS_F0) $(C_INCLUDES) $(C_INCLUDES_F0) $(OPT)
-CFLAGS_F0 += -fdata-sections -ffunction-sections -fno-exceptions -fno-strict-volatile-bitfields  -fno-threadsafe-statics
+CFLAGS_F0 += -fdata-sections -ffunction-sections -fno-exceptions -fno-strict-volatile-bitfields  -fno-threadsafe-statics -fexec-charset=cp1251
 CFLAGS_F0 += -Wall -Wno-register  -Wno-packed-bitfield-compat -Wno-strict-aliasing
 CFLAGS_F0 += -g -gdwarf-2 
 
@@ -115,7 +115,7 @@ clean:
 	-rm -fR .dep $(BUILD_DIR)
 
 flash:
-	st-flash write $(BUILD_DIR)/$(TARGET_F0).bin 0x8000000
+	st-flash --reset write $(BUILD_DIR)/$(TARGET_F0).bin 0x8000000
 
 util:
 	st-util

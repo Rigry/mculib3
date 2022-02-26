@@ -102,9 +102,41 @@ struct APB1ENR {
    bool     I2C1EN   :1;
    bool     I2C2EN   :1;
    bool     USBEN    :1;
-   uint32_t          :3;
+   uint32_t          :4;
    bool     PWREN    :1;
-   uint32_t res8     :3;
+   uint32_t          :3;
+}__attribute__((packed));
+
+struct BDCR {
+
+   enum Drive {lower = 0b00, medium_high = 0b01, medium_low, higher};
+   enum Clock {no_clock = 0b00, LSE = 0b01, LSI, HSE};
+
+   bool  LSEON  :1; // Bit 0 LSEON: LSE oscillator enable
+   bool  LSERDY :1; // Bit 1 LSERDY: LSE oscillator ready
+   bool  LSEBYP :1; // Bit 2 LSEBYP: LSE oscillator bypass
+   Drive LSEDRV :2; // Bits 4:3 LSEDRV LSE oscillator drive capability
+   uint32_t     :3; // Bits 7:5 Reserved, must be kept at reset value.
+   Clock RTCSEL :2; // Bits 9:8 RTCSEL[1:0]: RTC clock source selection
+   uint32_t     :5; // Bits 14:10 Reserved, must be kept at reset value.
+   bool RTCEN   :1; // Bit 15 RTCEN: RTC clock enable
+   bool BDRST   :1; // Bit 16 BDRST: RTC domain software reset
+   uint32_t     :15; // Bits 31:17 Reserved, must be kept at reset value.
+}__attribute__((packed));
+
+struct CSR {
+   bool LSION      :1; // Bit 0 LSION: LSI oscillator enable
+   bool LSIRDY     :1; // Bit 1 LSIRDY: LSI oscillator ready
+   uint32_t        :21; // Bits 22:2 Reserved, must be kept at reset value.
+   bool V18PWRRSTF :1; // Bit 23 V18PWRRSTF: Reset flag of the 1.8 V domain.
+   bool RMVF       :1; // Bit 24 RMVF: Remove reset flag
+   bool OBLRSTF    :1; // Bit 25 OBLRSTF: Option byte loader reset flag
+   bool PINRSTF    :1; // Bit 26 PINRSTF: PIN reset flag
+   bool PORRSTF    :1; // Bit 27 PORRSTF: POR/PDR reset flag
+   bool SFTRSTF    :1; // Bit 28 SFTRSTF: Software reset flag
+   bool IWDGRSTF   :1; // Bit 29 IWDGRSTF: Independent watchdog reset flag
+   bool WWDGRSTF   :1; // Bit 30 WWDGRSTF: Window watchdog reset flag
+   bool LPWRRSTF   :1; // Bit 31 LPWRRSTF: Low-power reset flag
 }__attribute__((packed));
 
 } // namespace mcu::RCC_bits {

@@ -15,6 +15,13 @@ using ADC = mock::ADC;
 #else
 using ADC = mcu::ADC;
 #endif
+#if defined (STM32F4)
+#if defined(USE_MOCK_ADCC)
+using ADCC = mock::ADCC;
+#else
+using ADCC = mcu::ADCC;
+#endif
+#endif
 
 #if defined(USE_MOCK_DMA)
 using DMA_stream = mock::DMA_stream;
@@ -40,7 +47,7 @@ private:
 };
 
 struct ADC_average : private List<ADC_channel>, Interrupting {
-    template<mcu::Periph>
+    template<mcu::Periph, mcu::Periph ADCC = mcu::Periph::ADCC>
     static ADC_average& make (size_t conversion_qty);
     template<class Pin>
     ADC_channel& add_channel();
@@ -54,6 +61,9 @@ private:
     const size_t        conversion_qty;
     size_t order{0};
     ADC&        adc;
+#if defined (STM32F4)
+    ADCC& adcc;
+#endif
     DMA_stream& dma;
     Interrupt& interrupt_;
     const mcu::Periph adc_periph;
@@ -61,12 +71,18 @@ private:
     ADC_average (
          size_t       conversion_qty
         , ADC&        adc
+    #if defined (STM32F4)
+        , ADCC&       adcc
+    #endif   
         , DMA_stream& dma
         , Interrupt&  interrupt_
         , mcu::Periph adc_periph
         
     ) : conversion_qty {conversion_qty}
       , adc            {adc}
+    #if defined (STM32F4)
+      , adcc           {adcc}
+    #endif
       , dma            {dma}
       , interrupt_     {interrupt_}
       , adc_periph     {adc_periph}
@@ -108,7 +124,7 @@ ADC_channel& ADC_channel::make()
 }
 
 
-template<mcu::Periph ADC>
+template<mcu::Periph ADC, mcu::Periph ADCC>
 ADC_average& ADC_average::make (size_t conversion_qty)
 {
     auto constexpr dma_periph = mcu::ADC::default_dma<ADC>();
@@ -116,6 +132,9 @@ ADC_average& ADC_average::make (size_t conversion_qty)
     static auto res = ADC_average {
           conversion_qty
         , mcu::make_reference<ADC>()
+    #if defined (STM32F4)
+        , mcu::make_reference<ADCC>()
+    #endif
         , mcu::make_reference<dma_periph>()
         , interrupt
         , ADC
@@ -129,6 +148,7 @@ ADC_average& ADC_average::make (size_t conversion_qty)
     res.adc.set (mcu::ADC::Clock::PCLKdiv4)      // no choice yet
            .set (mcu::ADC::Sample_time::Default);// no choice yet
 #elif defined (STM32F4)
+    res.adcc.set(mcu::ADCC::Clock::PCLKdiv8);
     res.adc.set_scan_mode();
 #endif
     REF(RCC).clock_enable<dma_periph>();
@@ -156,7 +176,7 @@ ADC_channel& ADC_average::add_channel()
     auto channel = adc.set_channel<Pin>(adc_periph);
     value.channel = channel;
 #if defined (STM32F4)
-    adc.set(channel, mcu::ADC::Sample_time::Default);
+    adc.set(channel, mcu::ADC::Sample_time::_480CLK);
     adc.set_regular_sequence_order(++order, channel);
     adc.set_regular_sequence_length(order);
 #endif

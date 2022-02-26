@@ -4,12 +4,15 @@
 #include "periph_dma.h"
 #include "periph_spi.h"
 #include "periph_tim.h"
-#if defined(STM32F1)
 #include "periph_exti.h"
+
+
+#if defined(STM32F051x8)
+extern "C" void PVD_IRQHandler(){ if (REF(EXTI).is_interrupt(16)) {interrupt_pvd.interrupt();} REF(EXTI).clear_interrupt_flags<16>();}
 #endif
 
-
 #if defined (STM32F0)
+    
     extern "C" void DMA1_Channel1_IRQHandler() { interrupt_DMA1_channel1.interrupt(); mcu::make_reference<mcu::Periph::DMA1>().clear_interrupt_flags(mcu::DMA::Channel::_1);}
     extern "C" void DMA1_Channel2_3_IRQHandler()     { 
         interrupt_DMA1_channel2.interrupt(); mcu::make_reference<mcu::Periph::DMA1>().clear_interrupt_flags(mcu::DMA::Channel::_2); 
@@ -24,10 +27,38 @@
     extern "C" void TIM16_IRQHandler              () { while(1) {} }
     extern "C" void TIM17_IRQHandler              () { while(1) {} }
 
-    extern "C" void USART1_IRQHandler() { 
-        interrupt_usart1.interrupt(); 
-        mcu::make_reference<mcu::Periph::USART1>().clear_interrupt_flags();} 
+    extern "C" void USART1_IRQHandler() { interrupt_usart1.interrupt(); mcu::make_reference<mcu::Periph::USART1>().clear_interrupt_flags();} 
 
+    extern "C" void EXTI0_1_IRQHandler() 
+    {
+        if (REF(EXTI).is_interrupt(0)) interrupt_EXTI0.interrupt();
+        if (REF(EXTI).is_interrupt(1)) interrupt_EXTI1.interrupt(); 
+        REF(EXTI).clear_interrupt_flags<0,1>();
+    }
+    extern "C" void EXTI2_3_IRQHandler() 
+    {
+        if (REF(EXTI).is_interrupt(2)) interrupt_EXTI2.interrupt();
+        if (REF(EXTI).is_interrupt(3)) interrupt_EXTI3.interrupt(); 
+        REF(EXTI).clear_interrupt_flags<2,3>();
+    }
+    extern "C" void EXTI4_15_IRQHandler() 
+    {
+        if (REF(EXTI).is_interrupt(4))  interrupt_EXTI4.interrupt();
+        if (REF(EXTI).is_interrupt(5))  interrupt_EXTI5.interrupt();
+        if (REF(EXTI).is_interrupt(6))  interrupt_EXTI6.interrupt();
+        if (REF(EXTI).is_interrupt(7))  interrupt_EXTI7.interrupt();
+        if (REF(EXTI).is_interrupt(8))  interrupt_EXTI8.interrupt();
+        if (REF(EXTI).is_interrupt(9))  interrupt_EXTI9.interrupt();
+        if (REF(EXTI).is_interrupt(10)) interrupt_EXTI10.interrupt();
+        if (REF(EXTI).is_interrupt(11)) interrupt_EXTI11.interrupt();
+        if (REF(EXTI).is_interrupt(12)) interrupt_EXTI12.interrupt();
+        if (REF(EXTI).is_interrupt(13)) interrupt_EXTI13.interrupt();
+        if (REF(EXTI).is_interrupt(14)) interrupt_EXTI14.interrupt();
+        if (REF(EXTI).is_interrupt(15)) interrupt_EXTI15.interrupt(); 
+        REF(EXTI).clear_interrupt_flags<4,15>();
+    }
+
+    // extern "C" void RTC_IRQHandler() {interrupt_rtc.interrupt(); REF(EXTI).clear_interrupt_flags<17>();}
 
 #elif defined (STM32F1)
     // список прерываний, которые не описаны
@@ -85,6 +116,7 @@
     extern "C" void USART1_IRQHandler          () { interrupt_usart1.interrupt(); mcu::make_reference<mcu::Periph::USART1>().clear_interrupt_flags();}
     extern "C" void USART2_IRQHandler          () { interrupt_usart2.interrupt(); mcu::make_reference<mcu::Periph::USART2>().clear_interrupt_flags();}
     extern "C" void USART3_IRQHandler          () { interrupt_usart3.interrupt(); mcu::make_reference<mcu::Periph::USART3>().clear_interrupt_flags();}
+    // extern "C" void USART4_IRQHandler          () { interrupt_usart4.interrupt(); mcu::make_reference<mcu::Periph::USART4>().clear_interrupt_flags();}
 
     extern "C" void DMA1_Channel1_IRQHandler   () { interrupt_DMA1_channel1.interrupt(); mcu::make_reference<mcu::Periph::DMA1>().clear_interrupt_flags(mcu::DMA::Channel::_1);}
     extern "C" void DMA1_Channel2_IRQHandler   () { interrupt_DMA1_channel2.interrupt(); mcu::make_reference<mcu::Periph::DMA1>().clear_interrupt_flags(mcu::DMA::Channel::_2);}
@@ -96,7 +128,6 @@
 
 #elif defined (STM32F4)
     extern "C" void WWDG_IRQHandler               () { while(1) {} }
-    extern "C" void PVD_IRQHandler                () { while(1) {} }
     extern "C" void TAMP_STAMP_IRQHandler         () { while(1) {} }
     extern "C" void RTC_WKUP_IRQHandler           () { while(1) {} }
     extern "C" void FLASH_IRQHandler              () { while(1) {} }
@@ -153,6 +184,8 @@
     extern "C" void TIM8_TRG_COM_TIM14_IRQHandler () { while(1) {} }
     extern "C" void TIM8_CC_IRQHandler            () { while(1) {} }
 
+
+    extern "C" void PVD_IRQHandler()          { if (REF(EXTI).is_interrupt(16)) {interrupt_pvd.interrupt();} REF(EXTI).clear_interrupt_flags<16>();}
     
     extern "C" void USART1_IRQHandler()       { interrupt_usart1.interrupt(); mcu::make_reference<mcu::Periph::USART1>().clear_interrupt_flags();} 
     extern "C" void USART2_IRQHandler()       { interrupt_usart2.interrupt(); mcu::make_reference<mcu::Periph::USART2>().clear_interrupt_flags();}

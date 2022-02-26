@@ -21,7 +21,7 @@ using UART_ = UART;
 struct Register_base {
     using byte = uint8_t;
     using word = uint16_t;
-    const byte address;
+    byte address;
     const word register_n;
     const Modbus_function function;
     word& data;
@@ -33,6 +33,7 @@ struct Register_base {
     {}
 
     virtual const std::tuple<byte,byte> get_crc() = 0;
+    void change_address (uint8_t adr) { address = adr; }
 };
 
 
@@ -190,7 +191,7 @@ auto& make_modbus_master (int time_out, UART_::Settings set, Regs& regs)
 template<uint8_t address_, Modbus_function f, uint16_t register_n_, class T>
 const std::tuple<uint8_t,uint8_t> Register<address_,f,register_n_,T>::get_crc()
 {
-    if constexpr (f == Modbus_function::read_03) {
+    if constexpr (f == Modbus_function::read_03 or f == Modbus_function::read_04) {
         return crc();
     } else if constexpr (f == Modbus_function::force_coil_05) {
         return bool(data) ? crc<true>() : crc<false>();
@@ -204,9 +205,11 @@ template<uint8_t address_, Modbus_function f, uint16_t register_n_, class T>
 template<bool on>
 constexpr const std::tuple<uint8_t,uint8_t> Register<address_,f,register_n_,T>::crc()
 {
-    if constexpr (f == Modbus_function::read_03 or f == Modbus_function::force_coil_05) {
+    if constexpr (f == Modbus_function::read_03 or
+                  f == Modbus_function::read_04 or
+                  f == Modbus_function::force_coil_05) {
         byte by  = f == Modbus_function::force_coil_05 and on ? 0xFF : 0;
-        byte by_ = f == Modbus_function::read_03 ? 1 : 0;
+        byte by_ = f == Modbus_function::read_03 or f == Modbus_function::read_04 ? 1 : 0;
                   
         auto res = Static_vector<byte, 8> {
                 address_
@@ -252,17 +255,23 @@ void Modbus_master<max_regs_qty>::operator() ()
                 uart.buffer << static_cast<byte>(reg->register_n << 8);
                 uart.buffer << static_cast<byte>(reg->register_n);
                 
-                if (reg->function == Modbus_function::read_03 or reg->function == Modbus_function::write_16) {
+                if (reg->function == Modbus_function::read_03 or
+                    reg->function == Modbus_function::read_04 or
+                    reg->function == Modbus_function::write_16) {
                     uart.buffer << byte(0);
                     uart.buffer << byte(1);
+                    if (reg->function == Modbus_function::write_16)
+                        uart.buffer << byte(2);
                 } else if (reg->function == Modbus_function::force_coil_05) {
                     uart.buffer << (bool(reg->data) ? byte(0xFF) : byte(0));
                     uart.buffer << byte(0);
                 }
                 if (reg->function == Modbus_function::write_16) {
-                    uart.buffer << static_cast<byte>(reg->data << 8) << static_cast<byte>(reg->data);
+                    uart.buffer << static_cast<byte>(reg->data >> 8) << static_cast<byte>(reg->data);
                 }
-                if (reg->function == Modbus_function::read_03 or reg->function == Modbus_function::force_coil_05) {
+                if (reg->function == Modbus_function::read_03 or
+                    reg->function == Modbus_function::read_04 or
+                    reg->function == Modbus_function::force_coil_05) {
                     auto [crc_lo, crc_hi] = reg->get_crc();
                     uart.buffer << crc_lo << crc_hi;
                 } else if (reg->function == Modbus_function::write_16) {
@@ -329,7 +338,7 @@ void Modbus_master<max_regs_qty>::get_answer()
         return;
     }
 
-    if (reg->function == Modbus_function::read_03) {
+    if (reg->function == Modbus_function::read_03 or reg->function == Modbus_function::read_04) {
         uint8_t  byte_qty;
         uart.buffer >> byte_qty;
         uart.buffer >> reg->data;

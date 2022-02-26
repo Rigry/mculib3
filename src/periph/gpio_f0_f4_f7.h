@@ -44,6 +44,11 @@ enum class PinMode
 #endif
 };
 
+enum class PushPull
+{
+   No, Up, Down
+};
+
 class GPIO
 {
    volatile GPIO_bits::MODER MODER;     // mode register,                offset: 0x00
@@ -61,6 +66,7 @@ class GPIO
 
 public:
    using CMSIS_type = GPIO_TypeDef;
+   using PullResistor = GPIO_bits::PUPDR::PullResistor;
    using Mode = GPIO_bits::MODER::Mode;
    using AF = GPIO_bits::AFR::AF;
 
@@ -72,7 +78,7 @@ public:
    void toggle(size_t n) { is_set(n) ? clear(n) : set(n); }
    void atomic_write(uint32_t value) { BSRR = value; }
 
-   template <class Pin_, PinMode>
+   template <class Pin_, PinMode, PushPull p = PushPull::No>
    void init();
 
 private:
@@ -80,6 +86,8 @@ private:
    GPIO &set(Mode);
    template <size_t>
    GPIO &set(AF);
+   template <size_t>
+   GPIO &set(PullResistor);
 };
 
 #if not defined(USE_MOCK_GPIO)
@@ -171,7 +179,7 @@ GPIO &GPIO::set(Mode v)
    }
    else if constexpr (n == 11)
    {
-      MODER.MODE10 = v;
+      MODER.MODE11 = v;
       return *this;
    }
    else if constexpr (n == 12)
@@ -281,7 +289,92 @@ GPIO &GPIO::set(AF v)
    }
 }
 
-template <class Pin_, PinMode v>
+template <size_t n >
+GPIO &GPIO::set(PullResistor p)
+{
+   if constexpr (n == 0)
+   {
+      PUPDR.PUPDR0 = p;
+      return *this;
+   }
+   else if constexpr (n == 1)
+   {
+      PUPDR.PUPDR1 = p;
+      return *this;
+   }
+   else if constexpr (n == 2)
+   {
+      PUPDR.PUPDR2 = p;
+      return *this;
+   }
+   else if constexpr (n == 3)
+   {
+      PUPDR.PUPDR3 = p;
+      return *this;
+   }
+   else if constexpr (n == 4)
+   {
+      PUPDR.PUPDR4 = p;
+      return *this;
+   }
+   else if constexpr (n == 5)
+   {
+      PUPDR.PUPDR5 = p;
+      return *this;
+   }
+   else if constexpr (n == 6)
+   {
+      PUPDR.PUPDR6 = p;
+      return *this;
+   }
+   else if constexpr (n == 7)
+   {
+      PUPDR.PUPDR7 = p;
+      return *this;
+   }
+   else if constexpr (n == 8)
+   {
+      PUPDR.PUPDR8 = p;
+      return *this;
+   }
+   else if constexpr (n == 9)
+   {
+      PUPDR.PUPDR9 = p;
+      return *this;
+   }
+   else if constexpr (n == 10)
+   {
+      PUPDR.PUPDR10 = p;
+      return *this;
+   }
+   else if constexpr (n == 11)
+   {
+      PUPDR.PUPDR11 = p;
+      return *this;
+   }
+   else if constexpr (n == 12)
+   {
+      PUPDR.PUPDR12 = p;
+      return *this;
+   }
+   else if constexpr (n == 13)
+   {
+      PUPDR.PUPDR13 = p;
+      return *this;
+   }
+   else if constexpr (n == 14)
+   {
+      PUPDR.PUPDR14 = p;
+      return *this;
+   }
+   else if constexpr (n == 15)
+   {
+      PUPDR.PUPDR15 = p;
+      return *this;
+   }
+}
+
+template <class Pin_, PinMode v, PushPull p>
 void GPIO::init()
 {
    if constexpr (v == PinMode::Input)
@@ -338,6 +431,18 @@ void GPIO::init()
       set<Pin_::n>(Mode::Alternate);
       set<Pin_::n>(AF::_8);
 #endif
+   }
+   if constexpr (p == PushPull::No)
+   {
+      set<Pin_::n>(PullResistor::No);
+   }
+   else if constexpr (p == PushPull::Up)
+   {
+      set<Pin_::n>(PullResistor::Up);
+   }
+   else if constexpr (p == PushPull::Down)
+   {
+      set<Pin_::n>(PullResistor::Down);
    }
 }
 

@@ -3,11 +3,11 @@
 #include "periph.h"
 
 #if defined(STM32F0)
-   #include "exti_f0.h"
+   #include "syscfg_f0.h"
 #elif defined(STM32F1)
-   #include "exti_f1.h"
+   #error exti for STM32F1 not realized
 #elif defined(STM32F4)
-   #include "exti_f4.h"
+   #error exti for STM32F4 not realized
 #elif defined(STM32F7)
    #error exti for STM32F7 not realized
 #endif

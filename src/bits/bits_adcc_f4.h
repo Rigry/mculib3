@@ -47,3 +47,5 @@ struct CCR {
    bool     TSVREFE :1; // Bit 23 TSVREFE: Temperature sensor and V REFINT enable
    uint32_t         :8; // Bits 31:24 Reserved, must be kept at reset value.
 }__attribute__((packed));
+
+}

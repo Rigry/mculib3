@@ -58,6 +58,7 @@
       "random": "cpp",
       "set": "cpp",
       "string": "cpp",
-      "cfenv": "cpp"
+      "cfenv": "cpp",
+      "bit": "cpp"
    }
 }

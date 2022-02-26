@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 
-#if   defined(STM32F030x6)
+#if   defined(STM32F030x6) or defined(STM32F051x8)
    #define STM32F0
 #elif defined(STM32F103xB)
    #define STM32F1
@@ -27,6 +27,8 @@
 #endif
 
 #undef RCC
+#undef RTC
+#undef PWR
 #undef GPIOA
 #undef GPIOB
 #undef GPIOC
@@ -52,6 +54,7 @@
 #undef TIM2
 #undef TIM3
 #undef TIM4
+#undef TIM5
 #undef TIM8
 #undef TIM14
 #undef TIM16
@@ -67,12 +70,13 @@
 #undef SPI2
 #undef SPI3
 #undef EXTI
+#undef SYSCFG
 
 
 namespace mcu {
 
 enum class Periph {
-    RCC,
+    RCC, RTC, PWR,
 #if   defined(STM32F0)
     GPIOA, GPIOB, GPIOC, GPIOD, GPIOF,
 #elif defined(STM32F1)
@@ -104,7 +108,7 @@ enum class Periph {
     ADC1, ADC2, ADC3,
 #endif
     SysTick,
-    TIM1, TIM2, TIM3, TIM4, TIM14, TIM16, TIM17, TIM8,
+    TIM1, TIM2, TIM3, TIM4, TIM5, TIM14, TIM16, TIM17, TIM8,
     SPI1, SPI2, SPI3,
     FLASH,
     ADCC,
@@ -119,7 +123,9 @@ enum class Periph {
     USB_HS_OUT,
 #endif
 
-#if defined(STM32F1)
+#if defined(STM32F0)
+    EXTI, SYSCFG, 
+#elif defined(STM32F1) or defined(STM32F4)
     EXTI,
 #endif
 

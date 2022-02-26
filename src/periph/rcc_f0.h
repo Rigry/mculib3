@@ -13,8 +13,8 @@ class RCC {
 	volatile RCC_bits::AHBENR  AHBENR;     // AHB peripheral clock register,         offset: 0x14
 	volatile RCC_bits::APB2ENR APB2ENR;    // APB2 peripheral clock enable register, offset: 0x18
 	volatile RCC_bits::APB1ENR APB1ENR;    // APB1 peripheral clock enable register, offset: 0x1C
-	volatile uint32_t          BDCR;       // Backup domain control register,        offset: 0x20
-	volatile uint32_t          CSR;        // clock control & status register,       offset: 0x24
+	volatile RCC_bits::BDCR    BDCR;       // Backup domain control register,        offset: 0x20
+	volatile RCC_bits::CSR     CSR;        // clock control & status register,       offset: 0x24
 	volatile uint32_t          AHBRSTR;    // AHB peripheral reset register,         offset: 0x28
 	volatile uint32_t          CFGR2;      // clock configuration register 2,        offset: 0x2C
 	volatile uint32_t          CFGR3;      // clock configuration register 3,        offset: 0x30
@@ -28,6 +28,8 @@ public:
 	using SystemClock   = RCC_bits::CFGR::SystemClock;
 	using PLLsource     = RCC_bits::CFGR::PLLsource;
 	using PLLmultiplier = RCC_bits::CFGR::PLLmultiplier;
+	using RTC_Clock     = RCC_bits::BDCR::Clock;
+	using Drive         = RCC_bits::BDCR::Drive;
 
 	auto& like_CMSIS() { return *reinterpret_cast<CMSIS_type*>(this); }
 
@@ -36,11 +38,19 @@ public:
 	RCC& set (SystemClock   v) { CFGR.SW     = v; return *this; }
 	RCC& set (PLLsource     v) { CFGR.PLLSRC = v; return *this; }
 	RCC& set (PLLmultiplier v) { CFGR.PLLMUL = v; return *this; }
+	RCC& set (RTC_Clock     v) { BDCR.RTCSEL = v; return *this; }
+	RCC& set (Drive         v) { BDCR.LSEDRV = v; return *this; }
 
 	RCC& on_HSE        () { CR.HSEON = true;         return *this; }
 	RCC& wait_HSE_ready() { while (not CR.HSERDY) {} return *this; }
 	RCC& on_PLL        () { CR.PLLON = true;         return *this; }
 	RCC& wait_PLL_ready() { while (not CR.PLLRDY) {} return *this; }
+	RCC& on_LSE        () { BDCR.LSEON = true;       return *this; }
+	RCC& wait_LSE_ready() { while (not BDCR.LSERDY){}return *this; }
+	RCC& on_LSI        () { CSR.LSION = true;        return *this; }
+	RCC& wait_LSI_ready() {while (not CSR.LSIRDY) {} return *this; }
+	RCC& backup_domain_reset(bool reset) { BDCR.BDRST = reset; return *this; }
+	bool clock_running () {return BDCR.RTCEN;}
 
 	size_t get_APB_clock()
 	{
@@ -76,6 +86,12 @@ public:
 		else if constexpr (p == Periph::DMA1_stream5) AHBENR.DMAEN = true;
 
 		else if constexpr (p == Periph::ADC1)   APB2ENR.ADC1EN = true;
+
+		else if constexpr (p == Periph::SYSCFG) APB2ENR.SYSCFGEN = true;
+
+		else if constexpr (p == Periph::RTC)    BDCR.RTCEN = true;
+
+		else if constexpr (p == Periph::PWR)    APB1ENR.PWREN = true;
 		
         else static_assert ( always_false_v<decltype(p)>, "допиши clock_enable");
 	}
