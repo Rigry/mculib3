@@ -76,6 +76,24 @@ private:
         if (not is_push() and tick_cnt == 0)
             return;
 
+        
+
+        tick_cnt++;
+
+        if (tick_cnt >= 10_ms and tick_cnt <= 500_ms and not down_executed) {
+            if(not is_push()) {
+                down_executed = true;
+                execute_if (not tied, down_callback);
+                return;
+            }
+        }
+
+        if (tick_cnt >= 1_s and not long_push_executed) {
+            long_push_executed = true;
+            execute_if (not tied, long_push_callback);
+            return;
+        }
+
         if (not is_push()) {
             execute_if (not tied and down_executed, up_callback);
             execute_if (not tied and down_executed and not long_push_executed, click_callback);
@@ -83,20 +101,6 @@ private:
             increment = 1;
             down_executed      = false;
             long_push_executed = false;
-            return;
-        }
-
-        tick_cnt++;
-
-        if (tick_cnt >= 10_ms and not down_executed) {
-            down_executed = true;
-            execute_if (not tied, down_callback);
-            return;
-        }
-
-        if (tick_cnt >= 1_s and not long_push_executed) {
-            long_push_executed = true;
-            execute_if (not tied, long_push_callback);
             return;
         }
 
