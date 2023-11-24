@@ -244,7 +244,7 @@ void HD44780::notify()
         case _1: {
             rw = false;
             rs = true;
-            auto symbol = buffer[index++];
+            volatile auto symbol = buffer[index++];
             auto [first, second] = chars[symbol];
             port.atomic_write(first);
             this->second = second;

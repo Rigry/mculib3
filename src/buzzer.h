@@ -32,7 +32,7 @@ public:
       if (not(cnt++ % tick)){
          pwm.out_enable();
       }
-      if (cnt == tick) {
+      if (cnt >= tick) {
          cnt = 0;
          pwm.out_disable();
          tick_unsubscribe();
