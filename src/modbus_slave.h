@@ -16,7 +16,7 @@ using UART_ = ::UART;
 #endif
 
 
-template <class InRegs_t, class OutRegs_t, size_t coils_qty = 0>
+template <class Hold_regs, class Input_regs, size_t coils_qty = 0>
 class Modbus_slave : TickSubscriber
 {
     UART_& uart;
@@ -47,6 +47,7 @@ class Modbus_slave : TickSubscriber
 
     void answer_error (Modbus_error_code);
     template <class fun> void answer_03 (fun request);
+    template <class fun> void answer_04 (fun request);
     template <class function> void answer_16 (function reaction);
     void answer_05();
 
@@ -88,28 +89,28 @@ class Modbus_slave : TickSubscriber
 
 public:
 
-    static constexpr uint16_t InRegQty  = sizeof (InRegs_t) / 2;
-    static constexpr uint16_t OutRegQty = sizeof(OutRegs_t) / 2;
+    static constexpr uint16_t HoldRegQty  = sizeof (Hold_regs) / 2;
+    static constexpr uint16_t InputRegQty = sizeof(Input_regs) / 2;
 
     union {
-        InRegs_t inRegs;
-        uint16_t arInRegs[InRegQty];
+        Hold_regs holdRegs;
+        uint16_t arholdRegs[HoldRegQty];
     };
     union {
-        OutRegs_t outRegs;
-        uint16_t arOutRegs[OutRegQty];
+        Input_regs input_Regs;
+        uint16_t arInput_Regs[InputRegQty];
     };
     union {
-        InRegs_t inRegsMin;
-        uint16_t arInRegsMin[InRegQty];
+        Hold_regs holdRegsMin;
+        uint16_t arholdRegsMin[HoldRegQty];
     };
     union {
-        InRegs_t inRegsMax;
-        uint16_t arInRegsMax[InRegQty];
+        Hold_regs holdRegsMax;
+        uint16_t arholdRegsMax[HoldRegQty];
     };
     std::array<std::function<void(bool)>, coils_qty> force_single_coil_05;
 
-    bool signed_[InRegQty] {};
+    bool signed_[HoldRegQty] {};
     
     Modbus_slave (
           uint8_t address
@@ -120,10 +121,10 @@ public:
       , interrupt_usart       {interrupt_usart}
       , interrupt_DMA_channel {interrupt_DMA_channel}
       , address               {address}
-      , arInRegs    {}
-      , outRegs     {}
-      , arInRegsMin {}
-      , arInRegsMax {}
+      , arholdRegs    {}
+      , input_Regs     {}
+      , arholdRegsMin {}
+      , arholdRegsMax {}
     {}
 
     template <mcu::Periph usart, class TXpin,  class RXpin, class RTSpin> 
@@ -131,7 +132,7 @@ public:
     {
         auto& uart_ref = UART_::make<usart, TXpin, RXpin, RTSpin>();
 
-        static Modbus_slave<InRegs_t, OutRegs_t, coils_qty> modbus {
+        static Modbus_slave<Hold_regs, Input_regs, coils_qty> modbus {
               address
             , uart_ref
             , get_interrupt<usart>()
@@ -193,9 +194,9 @@ public:
 
 
 
-template <class InRegs_t, class OutRegs_t, size_t coils_qty>
+template <class Hold_regs, class Input_regs, size_t coils_qty>
 template <class function, class fun>
-inline void Modbus_slave<InRegs_t, OutRegs_t, coils_qty>::operator() (function reaction, fun request)
+inline void Modbus_slave<Hold_regs, Input_regs, coils_qty>::operator() (function reaction, fun request)
 {
     if (uart.is_receiving()) {
         time = 0;
@@ -225,7 +226,8 @@ inline void Modbus_slave<InRegs_t, OutRegs_t, coils_qty>::operator() (function r
     uart.buffer.pop_front(); // adr
     func = uart.buffer.pop_front();
     switch (Modbus_function(func)) {
-        case Modbus_function::read_03 : answer_03(request);         break;
+        case Modbus_function::read_03 : answer_03(request);  break;
+        case Modbus_function::read_04 : answer_04(request);  break;
         case Modbus_function::write_16: answer_16(reaction); break;
         case Modbus_function::force_coil_05: answer_05();    break;
         default: answer_error (Modbus_error_code::wrong_func);
@@ -235,14 +237,14 @@ inline void Modbus_slave<InRegs_t, OutRegs_t, coils_qty>::operator() (function r
 
 
 
-template <class InReg, class OutRegs_t, size_t coils_qty>
-uint8_t Modbus_slave<InReg, OutRegs_t, coils_qty>::set_high_bit(uint8_t func)
+template <class Hold_regs, class Input_regs, size_t coils_qty>
+uint8_t Modbus_slave<Hold_regs, Input_regs, coils_qty>::set_high_bit(uint8_t func)
 {
     return (func | 0b10000000);
 }
 
-template <class InReg, class OutRegs_t, size_t coils_qty>
-bool Modbus_slave<InReg, OutRegs_t, coils_qty>::check_CRC()
+template <class Hold_regs, class Input_regs, size_t coils_qty>
+bool Modbus_slave<Hold_regs, Input_regs, coils_qty>::check_CRC()
 {
     auto high = uart.buffer.pop_back();
      auto low  = uart.buffer.pop_back();
@@ -250,8 +252,8 @@ bool Modbus_slave<InReg, OutRegs_t, coils_qty>::check_CRC()
     return (high == high_) and (low == low_);
 }
 
-template <class InReg, class OutRegs_t, size_t coils_qty>
-bool Modbus_slave<InReg, OutRegs_t, coils_qty>::check_regs(uint16_t qty_reg_device)
+template <class Hold_regs, class Input_regs, size_t coils_qty>
+bool Modbus_slave<Hold_regs, Input_regs, coils_qty>::check_regs(uint16_t qty_reg_device)
 {
     uart.buffer >> first_reg;
     uart.buffer >> qty_reg; 
@@ -260,15 +262,15 @@ bool Modbus_slave<InReg, OutRegs_t, coils_qty>::check_regs(uint16_t qty_reg_devi
     return (last_reg <= (qty_reg_device - 1));
 }
 
-template <class InReg, class OutRegs_t, size_t coils_qty>
-bool Modbus_slave<InReg, OutRegs_t, coils_qty>::check_reg(uint16_t qty_reg_device)
+template <class Hold_regs, class Input_regs, size_t coils_qty>
+bool Modbus_slave<Hold_regs, Input_regs, coils_qty>::check_reg(uint16_t qty_reg_device)
 {
     uart.buffer >> first_reg;
     return first_reg < qty_reg_device;
 }
 
-template <class InReg, class OutRegs_t, size_t coils_qty>
-void Modbus_slave<InReg, OutRegs_t, coils_qty>::answer_error(Modbus_error_code code)
+template <class Hold_regs, class Input_regs, size_t coils_qty>
+void Modbus_slave<Hold_regs, Input_regs, coils_qty>::answer_error(Modbus_error_code code)
 {
     uart.buffer.clear();
     
@@ -284,11 +286,11 @@ void Modbus_slave<InReg, OutRegs_t, coils_qty>::answer_error(Modbus_error_code c
     uart.transmit();
 }
 
-template <class InReg, class OutRegs_t, size_t coils_qty>
+template <class Hold_regs, class Input_regs, size_t coils_qty>
 template <class fun>
-void Modbus_slave<InReg, OutRegs_t, coils_qty>::answer_03(fun request)
+void Modbus_slave<Hold_regs, Input_regs, coils_qty>::answer_03(fun request)
 {
-    if (not check_regs(OutRegQty)) {
+    if (not check_regs(HoldRegQty)) {
         answer_error(Modbus_error_code::wrong_reg);
         return;
     }
@@ -297,7 +299,7 @@ void Modbus_slave<InReg, OutRegs_t, coils_qty>::answer_03(fun request)
     uart.buffer << address << static_cast<uint8_t>(Modbus_function::read_03) << qty_byte;
     while(qty_reg--) {
         request(first_reg);
-        uart.buffer << arOutRegs[first_reg++];
+        uart.buffer << arholdRegs[first_reg++];
     }
     auto [low_, high_] = CRC16(uart.buffer.begin(), uart.buffer.end());
     uart.buffer << low_ << high_;
@@ -305,11 +307,32 @@ void Modbus_slave<InReg, OutRegs_t, coils_qty>::answer_03(fun request)
     uart.transmit();
 }
 
-template <class InReg, class OutRegs_t, size_t coils_qty>
-template <class function>
-void Modbus_slave<InReg, OutRegs_t, coils_qty>::answer_16(function reaction)
+template <class Hold_regs, class Input_regs, size_t coils_qty>
+template <class fun>
+void Modbus_slave<Hold_regs, Input_regs, coils_qty>::answer_04(fun request)
 {
-    if (not check_regs(InRegQty)) {
+    if (not check_regs(InputRegQty)) {
+        answer_error(Modbus_error_code::wrong_reg);
+        return;
+    }
+    uart.buffer.clear();
+    // TODO определить оператор вместо статик каста
+    uart.buffer << address << static_cast<uint8_t>(Modbus_function::read_04) << qty_byte;
+    while(qty_reg--) {
+        request(first_reg);
+        uart.buffer << arInput_Regs[first_reg++];
+    }
+    auto [low_, high_] = CRC16(uart.buffer.begin(), uart.buffer.end());
+    uart.buffer << low_ << high_;
+
+    uart.transmit();
+}
+
+template <class Hold_regs, class Input_regs, size_t coils_qty>
+template <class function>
+void Modbus_slave<Hold_regs, Input_regs, coils_qty>::answer_16(function reaction)
+{
+    if (not check_regs(HoldRegQty)) {
         answer_error(Modbus_error_code::wrong_reg);
         return;
     }
@@ -330,8 +353,8 @@ void Modbus_slave<InReg, OutRegs_t, coils_qty>::answer_16(function reaction)
     uart.transmit();
 }
 
-template <class InReg, class OutRegs_t, size_t coils_qty>
-void Modbus_slave<InReg, OutRegs_t, coils_qty>::answer_05()
+template <class Hold_regs, class Input_regs, size_t coils_qty>
+void Modbus_slave<Hold_regs, Input_regs, coils_qty>::answer_05()
 {
     if (not check_reg(coils_qty)) {
         answer_error(Modbus_error_code::wrong_reg);
@@ -356,21 +379,21 @@ void Modbus_slave<InReg, OutRegs_t, coils_qty>::answer_05()
     uart.transmit();
 }
 
-template <class InRegs_t, class OutRegs_t, size_t coils_qty>
-bool Modbus_slave<InRegs_t, OutRegs_t, coils_qty>::check_value()
+template <class Hold_regs, class Input_regs, size_t coils_qty>
+bool Modbus_slave<Hold_regs, Input_regs, coils_qty>::check_value()
 {
     for (uint16_t i = 0; i < qty_reg; i++) {
         uart.buffer >> data;
         if (signed_[first_reg + i]) {
-            if ((int16_t(data) < int16_t(arInRegsMin[first_reg + i]) and int16_t(arInRegsMin[first_reg + i]) != 0) or
-                 (int16_t(data) > int16_t(arInRegsMax[first_reg + i]) and int16_t(arInRegsMax[first_reg + i]) != 0))
+            if ((int16_t(data) < int16_t(arholdRegsMin[first_reg + i]) and int16_t(arholdRegsMin[first_reg + i]) != 0) or
+                 (int16_t(data) > int16_t(arholdRegsMax[first_reg + i]) and int16_t(arholdRegsMax[first_reg + i]) != 0))
                 return false;
-            arInRegs[first_reg + i] = int16_t(data);
+            arholdRegs[first_reg + i] = int16_t(data);
         } else {
-            if ((data < arInRegsMin[first_reg + i] and arInRegsMin[first_reg + i] != 0) or
-                 (data > arInRegsMax[first_reg + i] and arInRegsMax[first_reg + i] != 0))
+            if ((data < arholdRegsMin[first_reg + i] and arholdRegsMin[first_reg + i] != 0) or
+                 (data > arholdRegsMax[first_reg + i] and arholdRegsMax[first_reg + i] != 0))
                 return false;
-            arInRegs[first_reg + i] = data;
+            arholdRegs[first_reg + i] = data;
         }
     }
 
